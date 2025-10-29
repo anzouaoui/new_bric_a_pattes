@@ -1,5 +1,5 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,8 +12,9 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { db } from '../../firebaseConfig';
+import FilterModal from '../FilterModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { db } from '../../firebaseConfig';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
@@ -64,35 +65,75 @@ const EmptyState = ({ navigation }) => (
 );
 
 export default function HomeScreen({ navigation }) {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // États pour les filtres
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    categories: [],
+    priceRange: [5, 50],
+    postalCode: ''
+  });
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [listings, setListings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
 
-  useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'listings'));
-        const listingsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setListings(listingsData);
-      } catch (error) {
-        console.error('Error fetching listings:', error);
-      } finally {
-        setLoading(false);
+  // Fonction pour charger les annonces avec filtrage
+  const fetchListings = async (filters = {}) => {
+    try {
+      setIsLoading(true);
+      let q = collection(db, 'listings');
+      
+      // Ajouter des conditions de filtrage si des filtres sont actifs
+      if (filters.categories && filters.categories.length > 0) {
+        q = query(q, where('category', 'in', filters.categories));
       }
-    };
+      
+      const querySnapshot = await getDocs(q);
+      const listingsData = [];
+      
+      querySnapshot.forEach((doc) => {
+        listingsData.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // Filtrer par prix côté client (car les requêtes Firestore ne prennent pas en charge les plages directement)
+      let filteredData = listingsData.filter(item => {
+        const price = parseFloat(item.price) || 0;
+        return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+      });
+      
+      // Filtrer par code postal si spécifié
+      if (filters.postalCode) {
+        filteredData = filteredData.filter(item => 
+          item.postalCode && item.postalCode.startsWith(filters.postalCode)
+        );
+      }
+      
+      setListings(listingsData);
+      setFilteredListings(filteredData);
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchListings();
+  // Chargement initial des annonces
+  useEffect(() => {
+    fetchListings(activeFilters);
   }, []);
+  
+  // Fonction pour gérer l'application des filtres
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+    fetchListings(filters);
+  };
 
   const handleListingPress = (item) => {
     // Navigation vers l'écran de détail de l'annonce
     // navigation.navigate('ListingDetail', { listingId: item.id });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#34D399" />
@@ -115,14 +156,17 @@ export default function HomeScreen({ navigation }) {
             placeholderTextColor="#9CA3AF"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity 
+          style={styles.filterButton} 
+          onPress={() => setIsFilterModalVisible(true)}
+        >
           <Ionicons name="options-outline" size={28} color="#000" />
         </TouchableOpacity>
       </View>
 
       {/* Liste des annonces */}
       <FlatList
-        data={listings}
+        data={filteredListings.length > 0 ? filteredListings : listings}
         keyExtractor={(item) => item.id}
         numColumns={2}
         showsVerticalScrollIndicator={false}
@@ -141,7 +185,14 @@ export default function HomeScreen({ navigation }) {
       >
         <Feather name="plus" size={30} color="#FFF" />
       </TouchableOpacity>
-    </View>
+      </View>
+      
+      {/* Modal de filtrage */}
+      <FilterModal
+        isVisible={isFilterModalVisible}
+        onClose={() => setIsFilterModalVisible(false)}
+        onApplyFilters={handleApplyFilters}
+      />
     </SafeAreaView>
   );
 }
@@ -190,6 +241,8 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   filterButton: {
+    marginLeft: 12,
+    padding: 8,
     marginLeft: 12,
   },
   listContent: {
