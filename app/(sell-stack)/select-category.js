@@ -36,7 +36,7 @@ const SelectCategoryScreen = () => {
     if (selectedCategory) {
       // <--- MODIFICATION 3: Utiliser router.push avec les paramètres
       router.push({
-        pathname: '/(sell-stack)/AddPhotosScreen', // Navigue vers 'app/(sell-stack)/add-details.js'
+        pathname: 'AddDetailsScreen', // Navigue vers 'app/(sell-stack)/add-details.js'
         params: { category: selectedCategory }
       });
     }

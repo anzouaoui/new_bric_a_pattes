@@ -84,7 +84,7 @@ export default function AddPhotosScreen() {
     if (images.length === 0) return;
     
     router.push({
-      pathname: '/(sell-stack)/review-listing',
+      pathname: 'ReviewListingScreen',
       params: { 
         ...localSearchParams,
         images: JSON.stringify(images)
