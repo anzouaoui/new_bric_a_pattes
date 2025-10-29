@@ -1,15 +1,11 @@
-import { AntDesign, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import {
-    Image,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -21,7 +17,7 @@ const WelcomeScreen = ({ navigation }) => {
 
         {/* Image principale */}
         <Image 
-          source={require('../assets/images/beagle.png')} 
+          source={require('../../assets/images/beagle.png')} 
           style={styles.mainImage}
           resizeMode="cover"
         />
@@ -32,19 +28,17 @@ const WelcomeScreen = ({ navigation }) => {
         </Text>
 
         {/* Boutons d'action */}
-        <TouchableOpacity 
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('Register')}
-        >
-          <Text style={styles.primaryButtonText}>S'inscrire</Text>
-        </TouchableOpacity>
+        <Link href="/(auth)/signup" asChild>
+          <TouchableOpacity style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>S'inscrire</Text>
+          </TouchableOpacity>
+        </Link>
 
-        <TouchableOpacity 
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={styles.secondaryButtonText}>Se connecter</Text>
-        </TouchableOpacity>
+        <Link href="/(auth)/login" asChild>
+          <TouchableOpacity style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </Link>
 
         {/* Séparateur */}
         <View style={styles.separator}>
@@ -67,13 +61,9 @@ const WelcomeScreen = ({ navigation }) => {
         <View style={styles.legalTextContainer}>
           <Text style={styles.legalText}>
             En continuant, vous acceptez nos{' '}
-            <Pressable onPress={() => console.log('Conditions d\'utilisation')}>
-              <Text style={styles.legalLink}>Conditions d'utilisation</Text>
-            </Pressable>{' '}
+            <Text style={styles.legalLink}>Conditions d'utilisation</Text>{' '}
             et notre{' '}
-            <Pressable onPress={() => console.log('Politique de confidentialité')}>
-              <Text style={styles.legalLink}>Politique de confidentialité</Text>
-            </Pressable>
+            <Text style={styles.legalLink}>Politique de confidentialité</Text>
           </Text>
         </View>
       </View>
@@ -85,6 +75,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingTop: 20,
   },
   content: {
     flex: 1,
