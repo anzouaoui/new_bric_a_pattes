@@ -2,6 +2,8 @@ import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   Pressable,
@@ -10,9 +12,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Image,
+  ActivityIndicator
 } from 'react-native';
-import { auth } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 
 const SignUpScreen = () => {
   const [email, setEmail] = useState('');
@@ -20,18 +24,99 @@ const SignUpScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState({
+    street: '',
+    city: '',
+    postalCode: ''
+  });
+  const [profileImage, setProfileImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handlePickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled) {
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sélection de l\'image:', error);
+      setError("Erreur lors de la sélection de l'image");
+    }
+  };
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      setError("Les mots de passe ne correspondent pas");
       return;
     }
     
+    setIsLoading(true);
+    setError(null);
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // La navigation sera gérée automatiquement par le RootLayout
+      // Étape 1 : Création du compte utilisateur
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Étape 2 : Création du document utilisateur dans Firestore
+      const userDocRef = doc(db, "users", user.uid);
+
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: email.split('@')[0], // Pseudo par défaut basé sur l'email
+        avatarUrl: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y', // Avatar par défaut
+        createdAt: serverTimestamp(),
+        favorites: [],
+        listings: [],
+        phoneNumber: phoneNumber,
+        address: {
+          street: address.street,
+          city: address.city,
+          postalCode: address.postalCode,
+          country: 'France'
+        }
+      };
+
+      await setDoc(userDocRef, userData);
+      
+      console.log('Utilisateur créé avec succès:', user.uid);
+      
+      // Redirection vers l'écran d'accueil après inscription réussie
+      router.replace('/(tabs)');
     } catch (error) {
-      alert(error.message);
+      console.error("Erreur lors de l'inscription: ", error);
+      
+      // Gestion des erreurs spécifiques
+      let errorMessage = "Une erreur est survenue lors de l'inscription";
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "Cet email est déjà utilisé par un autre compte";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "L'adresse email n'est pas valide";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "Le mot de passe doit contenir au moins 6 caractères";
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,6 +130,13 @@ const SignUpScreen = () => {
       {/* Titre de la page */}
       <Text style={styles.title}>Créez votre compte</Text>
       <Text style={styles.subtitle}>Rejoignez la communauté des amoureux des animaux</Text>
+
+      {/* Affichage des erreurs */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
 
       {/* Formulaire */}
       <View style={styles.formGroup}>
@@ -94,6 +186,92 @@ const SignUpScreen = () => {
         </View>
       </View>
 
+      {/* Champ Téléphone */}
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Numéro de téléphone</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre numéro de téléphone"
+            keyboardType="phone-pad"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
+          <Feather name="phone" size={20} color="grey" />
+        </View>
+      </View>
+
+      {/* Champ Adresse */}
+      <Text style={[styles.label, {marginTop: 8}]}>Adresse</Text>
+      
+      <View style={styles.formGroup}>
+        <Text style={styles.subLabel}>Rue</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="N° et nom de la rue"
+            value={address.street}
+            onChangeText={(text) => setAddress({...address, street: text})}
+          />
+          <Feather name="map-pin" size={18} color="grey" />
+        </View>
+      </View>
+
+      <View style={styles.addressRow}>
+        <View style={[styles.formGroup, {flex: 2, marginRight: 10}]}>
+          <Text style={styles.subLabel}>Code postal</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Code postal"
+              keyboardType="number-pad"
+              value={address.postalCode}
+              onChangeText={(text) => setAddress({...address, postalCode: text})}
+              maxLength={5}
+            />
+          </View>
+        </View>
+        <View style={[styles.formGroup, {flex: 3}]}>
+          <Text style={styles.subLabel}>Ville</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Ville"
+              value={address.city}
+              onChangeText={(text) => setAddress({...address, city: text})}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Photo de profil */}
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Photo de profil (optionnel)</Text>
+        <TouchableOpacity 
+          style={styles.photoPicker}
+          onPress={handlePickImage}
+          disabled={isUploading}
+        >
+          {profileImage ? (
+            <Image 
+              source={{ uri: profileImage }} 
+              style={styles.profileImage} 
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.photoPlaceholder}>
+              <Feather name="camera" size={28} color="#9CA3AF" />
+              <Text style={styles.photoText}>Ajouter une photo</Text>
+            </View>
+          )}
+          {isUploading && (
+            <View style={styles.uploadOverlay}>
+              <ActivityIndicator color="#FFFFFF" />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
       {/* Texte légal */}
       <Text style={styles.legalText}>
         En vous inscrivant, vous acceptez nos{' '}
@@ -102,12 +280,22 @@ const SignUpScreen = () => {
       </Text>
 
       {/* Bouton d'inscription */}
-      <TouchableOpacity 
-        style={styles.signUpButton}
-        onPress={handleSignUp}
-      >
-        <Text style={styles.signUpButtonText}>Créer mon compte</Text>
-      </TouchableOpacity>
+      <View style={{marginTop: 20, marginBottom: 30}}>
+        <TouchableOpacity 
+          style={[
+            styles.signUpButton, 
+            (isLoading || !email || !password || !confirmPassword) && styles.disabledButton
+          ]}
+          onPress={handleSignUp}
+          disabled={isLoading || !email || !password || !confirmPassword}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.signUpButtonText}>S'inscrire</Text>
+          )}
+        </TouchableOpacity>
+      </View>
 
       {/* Séparateur */}
       <View style={styles.separator}>
@@ -148,7 +336,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    padding: 20,
   },
   scrollContent: {
     flexGrow: 1,
@@ -195,15 +383,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
+    backgroundColor: '#F9FAFB',
   },
   input: {
     flex: 1,
     height: 50,
     paddingRight: 10,
+  },
+  subLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 6,
+    fontWeight: '500',
+  },
+  addressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  photoPicker: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    overflow: 'hidden',
+    marginVertical: 10,
+  },
+  photoPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoText: {
+    marginTop: 8,
+    color: '#9CA3AF',
+    fontSize: 12,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  uploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   legalText: {
     fontSize: 13,
@@ -218,15 +448,20 @@ const styles = StyleSheet.create({
   },
   signUpButton: {
     backgroundColor: '#34D399',
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: 12,
     width: '100%',
     alignItems: 'center',
-    marginTop: 10,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signUpButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 16,
   },
   separator: {
