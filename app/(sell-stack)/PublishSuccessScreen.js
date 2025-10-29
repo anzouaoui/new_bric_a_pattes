@@ -1,6 +1,6 @@
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PublishSuccessScreen() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function PublishSuccessScreen() {
           style={styles.primaryButton}
           onPress={() => {
             router.push({
-              pathname: '/(boost)/boost-options',
+              pathname: '/(boost)/BoostOptionsScreen',
               params: { listingId: newListingId }
             });
           }}
