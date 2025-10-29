@@ -1,14 +1,15 @@
+import { FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // <--- MODIFICATION 1: Importer useRouter
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  SafeAreaView, 
-  FlatList, 
-  Dimensions 
+import {
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
@@ -26,12 +27,18 @@ const CATEGORIES = [
   { id: 'autre', name: 'Autre', icon: <MaterialCommunityIcons name="dots-horizontal" size={24} /> },
 ];
 
-const SelectCategoryScreen = ({ navigation }) => {
+// <--- MODIFICATION 2: Retirer { navigation } des props
+const SelectCategoryScreen = () => {
+  const router = useRouter(); // <--- MODIFICATION 2: Appeler le hook
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleNext = () => {
     if (selectedCategory) {
-      navigation.navigate('add-details', { category: selectedCategory });
+      // <--- MODIFICATION 3: Utiliser router.push avec les paramètres
+      router.push({
+        pathname: 'AddDetailsScreen', // Navigue vers 'app/(sell-stack)/add-details.js'
+        params: { category: selectedCategory }
+      });
     }
   };
 
@@ -63,7 +70,8 @@ const SelectCategoryScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* En-tête */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        {/* <--- MODIFICATION 3: Utiliser router.back() */}
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Choisir une catégorie</Text>
@@ -102,6 +110,7 @@ const SelectCategoryScreen = ({ navigation }) => {
   );
 };
 
+// ... (les styles restent inchangés) ...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
