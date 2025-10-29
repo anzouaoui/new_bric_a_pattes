@@ -1,4 +1,5 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // <--- FIX 1: Importer useRouter
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
@@ -12,9 +13,9 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import FilterModal from '../FilterModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../../firebaseConfig';
+import FilterModal from '../FilterModal';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
@@ -39,7 +40,8 @@ const ListingCard = ({ item, onPress }) => (
   </TouchableOpacity>
 );
 
-const EmptyState = ({ navigation }) => (
+// <--- FIX 3: 'EmptyState' reçoit 'onSellPress' au lieu de 'navigation'
+const EmptyState = ({ onSellPress }) => (
   <View style={styles.emptyContainer}>
     <Image 
       source={require('../../assets/images/empty-state.png')} 
@@ -51,7 +53,7 @@ const EmptyState = ({ navigation }) => (
     </Text>
     <TouchableOpacity 
       style={styles.primaryButton}
-      onPress={() => navigation.navigate('Vendre')}
+      onPress={onSellPress} // <--- FIX 3: Appel de la prop
     >
       <Text style={styles.primaryButtonText}>Vendre un article</Text>
     </TouchableOpacity>
@@ -64,7 +66,10 @@ const EmptyState = ({ navigation }) => (
   </View>
 );
 
-export default function HomeScreen({ navigation }) {
+// <--- FIX 2: Retrait de { navigation } des props
+export default function HomeScreen() {
+  const router = useRouter(); // <--- FIX 2: Utilisation du hook
+  
   // États pour les filtres
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -130,7 +135,7 @@ export default function HomeScreen({ navigation }) {
 
   const handleListingPress = (item) => {
     // Navigation vers l'écran de détail de l'annonce
-    // navigation.navigate('ListingDetail', { listingId: item.id });
+    // router.push(`/listing/${item.id}`); // Exemple de navigation avec router
   };
 
   if (isLoading) {
@@ -165,23 +170,30 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* Liste des annonces */}
-      <FlatList
-        data={filteredListings.length > 0 ? filteredListings : listings}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<EmptyState navigation={navigation} />}
-        ListHeaderComponent={<View style={{ height: 16 }} />}
-        renderItem={({ item }) => (
-          <ListingCard item={item} onPress={handleListingPress} />
-        )}
-      />
+      {listings.length === 0 ? (
+        // <--- FIX 3: Appel de EmptyState avec la nouvelle prop
+        <EmptyState 
+          onSellPress={() => router.push('/(sell-stack)/select-category')} 
+        />
+      ) : (
+        <FlatList
+          data={filteredListings.length > 0 ? filteredListings : listings}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={<View style={{ height: 16 }} />}
+          renderItem={({ item }) => (
+            <ListingCard item={item} onPress={handleListingPress} />
+          )}
+        />
+      )}
 
       {/* Bouton d'action flottant */}
       <TouchableOpacity 
         style={styles.fab}
-        onPress={() => navigation.navigate('Vendre')}
+        // <--- FIX 4: Utilisation de router.push
+        onPress={() => router.push('/(sell-stack)/select-category')}
       >
         <Feather name="plus" size={30} color="#FFF" />
       </TouchableOpacity>

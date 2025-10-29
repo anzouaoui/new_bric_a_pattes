@@ -2,9 +2,11 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, useColorScheme } from 'react-native';
 import { auth } from '../firebaseConfig';
 import 'react-native-reanimated';
+
+type User = any; // Vous devriez importer le type User depuis firebase/auth
 
 export const unstable_settings = {
   anchor: '(auth)',
@@ -12,8 +14,9 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const colorScheme = 'light'; // Forcer le thème clair pour l'instant
+  const [user, setUser] = useState<User | null>(null);
+  const systemColorScheme = useColorScheme();
+  const colorScheme = systemColorScheme || 'light';
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -33,18 +36,25 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        {user ? (
-          // Utilisateur connecté - Afficher l'application principale
-          <Stack.Screen name="(tabs)" />
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <Stack>
+        {!user ? (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         ) : (
-          // Utilisateur non connecté - Afficher l'écran d'authentification
-          <Stack.Screen name="(auth)" />
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen 
+              name="(sell-stack)" 
+              options={{ 
+                headerShown: false,
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }} 
+            />
+          </>
         )}
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
