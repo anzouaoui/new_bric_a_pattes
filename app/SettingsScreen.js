@@ -76,7 +76,7 @@ export default function SettingsScreen() {
           <SettingsRow 
             icon="help-circle-outline"
             label="Aide & FAQ"
-            onPress={() => console.log("Help & FAQ")}
+            onPress={() => router.push('settings/HelpCenterScreen')}
           />
           <SettingsRow 
             icon="mail-outline"
