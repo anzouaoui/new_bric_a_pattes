@@ -6,7 +6,8 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ScrollView,
-  Pressable
+  Pressable,
+  ActivityIndicator
 } from 'react-native';
 import { MaterialCommunityIcons, Feather, AntDesign, FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -28,6 +29,8 @@ const LoginScreen = () => {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Redirection vers l'écran d'accueil après connexion réussie
+      router.replace('/(tabs)');
       // La navigation sera gérée automatiquement par le RootLayout
     } catch (error) {
       let errorMessage = 'Une erreur est survenue lors de la connexion';
