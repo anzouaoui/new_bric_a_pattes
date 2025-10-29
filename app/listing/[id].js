@@ -23,7 +23,9 @@ import {
   getDocs, 
   addDoc, 
   serverTimestamp,
-  updateDoc 
+  updateDoc,
+  arrayUnion,
+  arrayRemove
 } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 
@@ -34,8 +36,54 @@ const ListingDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [contactLoading, setContactLoading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [userData, setUserData] = useState(null);
   const router = useRouter();
   const { id } = useLocalSearchParams();
+
+  const fetchUserFavorites = async () => {
+    if (auth.currentUser) {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        setUserData(data);
+        if (data.favorites?.includes(id)) {
+          setIsFavorite(true);
+        } else {
+          setIsFavorite(false);
+        }
+      }
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!auth.currentUser) {
+      Alert.alert("Connexion requise", "Connectez-vous pour ajouter des favoris.");
+      return;
+    }
+
+    const userRef = doc(db, 'users', auth.currentUser.uid);
+
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        await updateDoc(userRef, {
+          favorites: arrayRemove(id)
+        });
+        setIsFavorite(false);
+      } else {
+        // Add to favorites
+        await updateDoc(userRef, {
+          favorites: arrayUnion(id)
+        }, { merge: true });
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour des favoris:", error);
+      Alert.alert("Erreur", "Impossible de mettre à jour les favoris.");
+    }
+  };
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -52,13 +100,17 @@ const ListingDetailScreen = () => {
         }
       } catch (error) {
         console.error('Error fetching listing:', error);
+        Alert.alert('Error', 'Could not load listing details');
       } finally {
         setLoading(false);
       }
     };
 
     fetchListing();
-  }, [id]);
+    if (auth.currentUser) {
+      fetchUserFavorites();
+    }
+  }, [id, auth.currentUser]);
 
   const onShare = async () => {
     try {
@@ -292,8 +344,15 @@ const ListingDetailScreen = () => {
 
       {/* Footer CTA */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.favoriteButton}>
-          <Ionicons name="heart-outline" size={24} color="#34D399" />
+        <TouchableOpacity 
+          style={styles.favoriteButton}
+          onPress={handleToggleFavorite}
+        >
+          <Ionicons 
+            name={isFavorite ? "heart" : "heart-outline"} 
+            size={24} 
+            color={isFavorite ? "#EF4444" : "#34D399"} 
+          />
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.contactButton, contactLoading && styles.disabledButton]}

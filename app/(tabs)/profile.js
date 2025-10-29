@@ -105,7 +105,7 @@ export default function ProfileScreen() {
             icon={<Ionicons name="heart-outline" size={22} color="#4B5563" />}
             label="Mes Favoris"
             badge={favoriteCount}
-            onPress={() => router.push('/profile/my-favorites')}
+            onPress={() => router.push('/profile/MyfavoritsScreen')}
           />
           <View style={styles.divider} />
           <ProfileRow
