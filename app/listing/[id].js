@@ -1,0 +1,366 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+  Share,
+  Dimensions,
+  StyleSheet
+} from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+
+const { width } = Dimensions.get('window');
+
+const ListingDetailScreen = () => {
+  const [listing, setListing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const router = useRouter();
+  const { id } = useLocalSearchParams();
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      if (!id) return;
+      
+      try {
+        const docRef = doc(db, 'listings', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setListing({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching listing:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, [id]);
+
+  const onShare = async () => {
+    try {
+      await Share.share({
+        message: `Découvre cette annonce: ${listing?.title} - ${listing?.price}€`,
+      });
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleContactSeller = () => {
+    // TODO: Implémenter la logique de messagerie
+    alert('Fonctionnalité de messagerie à venir');
+  };
+
+  const handleImageScroll = (event) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const index = Math.floor(event.nativeEvent.contentOffset.x / slideSize);
+    setActiveIndex(index);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Chargement...</Text>
+      </View>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Annonce non trouvée</Text>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={onShare}
+          >
+            <Ionicons name="share-outline" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Carousel */}
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleImageScroll}
+          scrollEventThrottle={200}
+          style={styles.carousel}
+        >
+          {listing.imageUrls?.map((image, index) => (
+            <Image
+              key={index}
+              source={{ uri: image }}
+              style={styles.carouselImage}
+              resizeMode="cover"
+            />
+          ))}
+        </ScrollView>
+
+        {/* Pagination Dots */}
+        {listing.imageUrls?.length > 1 && (
+          <View style={styles.pagination}>
+            {listing.imageUrls.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  { opacity: activeIndex === index ? 1 : 0.5 },
+                ]}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Title & Price */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{listing.title}</Text>
+            <Text style={styles.price}>{listing.price} €</Text>
+          </View>
+
+          {/* Description */}
+          <Text style={styles.description}>{listing.description}</Text>
+
+          {/* Details Grid */}
+          <View style={styles.detailsGrid}>
+            <View style={styles.detailChip}>
+              <Text style={styles.detailLabel}>État</Text>
+              <Text style={styles.detailValue}>{listing.condition || 'Non spécifié'}</Text>
+            </View>
+            <View style={styles.detailChip}>
+              <Text style={styles.detailLabel}>Catégorie</Text>
+              <Text style={styles.detailValue}>{listing.category || 'Non spécifiée'}</Text>
+            </View>
+            <View style={styles.detailChip}>
+              <Text style={styles.detailLabel}>Lieu</Text>
+              <Text style={styles.detailValue}>{listing.postalCode || 'Non spécifié'}</Text>
+            </View>
+            <View style={styles.detailChip}>
+              <Text style={styles.detailLabel}>Marque</Text>
+              <Text style={styles.detailValue}>{listing.brand || 'Non spécifiée'}</Text>
+            </View>
+          </View>
+
+          {/* Seller Info */}
+          <TouchableOpacity 
+            style={styles.sellerContainer}
+            onPress={() => router.push(`/profile/${listing.userId}`)}
+          >
+            <Image 
+              source={{ uri: listing.userAvatar || 'https://via.placeholder.com/50' }} 
+              style={styles.avatar} 
+            />
+            <View style={styles.sellerInfo}>
+              <Text style={styles.sellerName}>{listing.userName || 'Vendeur'}</Text>
+              <Text style={styles.rating}>⭐ 4.8 (12 avis)</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Footer CTA */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.favoriteButton}>
+          <Ionicons name="heart-outline" size={24} color="#34D399" />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.contactButton}
+          onPress={handleContactSeller}
+        >
+          <Text style={styles.contactButtonText}>Contacter le vendeur</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  headerButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carousel: {
+    width: '100%',
+    height: 350,
+  },
+  carouselImage: {
+    width: width,
+    height: 350,
+  },
+  pagination: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 4,
+  },
+  content: {
+    padding: 24,
+    paddingBottom: 100, // Pour éviter que le contenu ne soit caché par le footer
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 16,
+  },
+  price: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#34D399',
+  },
+  description: {
+    fontSize: 16,
+    color: '#6B7280',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  detailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  detailChip: {
+    width: '48%',
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  sellerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E5E7EB',
+  },
+  sellerInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  sellerName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  rating: {
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  footer: {
+    flexDirection: 'row',
+    padding: 24,
+    borderTopWidth: 1,
+    borderColor: '#EFEFEF',
+    backgroundColor: '#FFFFFF',
+  },
+  favoriteButton: {
+    borderWidth: 1.5,
+    borderColor: '#34D399',
+    padding: 16,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 56,
+  },
+  contactButton: {
+    flex: 1,
+    marginLeft: 12,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#34D399',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contactButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+});
+
+export default ListingDetailScreen;

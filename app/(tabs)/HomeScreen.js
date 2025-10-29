@@ -153,7 +153,7 @@ export default function HomeScreen() {
 
   const handleListingPress = (item) => {
     // Navigation vers l'écran de détail de l'annonce
-    // router.push(`/listing/${item.id}`); // Exemple de navigation avec router
+    router.push(`/listing/${item.id}`);
   };
 
   if (isLoading) {
@@ -198,6 +198,12 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <ListingCard 
+              item={item} 
+              onPress={handleListingPress} 
+            />
+          )}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={<View style={{ height: 16 }} />}
           ListEmptyComponent={
@@ -207,9 +213,6 @@ export default function HomeScreen() {
               </Text>
             </View>
           }
-          renderItem={({ item }) => (
-            <ListingCard item={item} onPress={handleListingPress} />
-          )}
         />
       )}
 
