@@ -124,6 +124,12 @@ export default function ProfileScreen() {
           />
           <View style={styles.divider} />
           <ProfileRow
+            icon={<Ionicons name="bag-handle-outline" size={22} color="#4B5563" />}
+            label="Mes Ventes"
+            onPress={() => router.push('/profile/MySalesScreen')}
+          />
+          <View style={styles.divider} />
+          <ProfileRow
             icon={<Ionicons name="settings-outline" size={22} color="#4B5563" />}
             label="Paramètres"
             onPress={() => router.push('SettingsScreen')}
