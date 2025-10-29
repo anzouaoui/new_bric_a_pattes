@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   FlatList,
   Image,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  StyleSheet
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db, getAuth } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 
 const MessageBubble = ({ item, currentUserId }) => {
   const isSentByMe = item.userId === currentUserId;
@@ -59,7 +59,6 @@ export default function ChatScreen() {
   const flatListRef = useRef(null);
   const router = useRouter();
   const { id: chatId } = useLocalSearchParams();
-  const auth = getAuth();
   const currentUser = auth.currentUser;
 
   // Charger les messages

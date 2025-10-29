@@ -8,12 +8,24 @@ import {
   SafeAreaView,
   Share,
   Dimensions,
-  StyleSheet
+  StyleSheet,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { 
+  doc, 
+  getDoc, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  serverTimestamp,
+  updateDoc 
+} from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +33,7 @@ const ListingDetailScreen = () => {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [contactLoading, setContactLoading] = useState(false);
   const router = useRouter();
   const { id } = useLocalSearchParams();
 
@@ -57,9 +70,100 @@ const ListingDetailScreen = () => {
     }
   };
 
-  const handleContactSeller = () => {
-    // TODO: Implémenter la logique de messagerie
-    alert('Fonctionnalité de messagerie à venir');
+  const handleContactSeller = async () => {
+    setContactLoading(true);
+    const { currentUser } = auth;
+
+    if (!currentUser) {
+      Alert.alert("Connexion requise", "Vous devez être connecté pour contacter un vendeur.");
+      setContactLoading(false);
+      return;
+    }
+
+    // 1. Vérifier si l'utilisateur se contacte lui-même
+    if (currentUser.uid === listing.userId) {
+      Alert.alert("Action impossible", "Vous ne pouvez pas vous envoyer de message à vous-même.");
+      setContactLoading(false);
+      return;
+    }
+
+    try {
+      const buyerId = currentUser.uid;
+      const sellerId = listing.userId;
+
+      // 2. Chercher un chat existant entre les deux utilisateurs
+      const chatsRef = collection(db, 'chats');
+      const q = query(chatsRef, where('participants', 'array-contains', buyerId));
+
+      const querySnapshot = await getDocs(q);
+      let existingChatId = null;
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        // Vérifier si l'autre participant est bien le vendeur
+        if (data.participants.includes(sellerId)) {
+          existingChatId = doc.id;
+        }
+      });
+
+      // 3. Si un chat existe, y naviguer
+      if (existingChatId) {
+        router.push(`/chat/${existingChatId}`);
+      } else {
+        // 4. Sinon, créer un nouveau chat
+        console.log("Aucun chat trouvé, création d'un nouveau chat...");
+
+        // Récupérer les infos de l'acheteur et du vendeur pour le chat
+        const sellerData = (await getDoc(doc(db, 'users', sellerId))).data();
+        const buyerData = (await getDoc(doc(db, 'users', buyerId))).data();
+
+        const newChatData = {
+          participants: [buyerId, sellerId],
+          participantInfo: {
+            [buyerId]: {
+              name: buyerData.displayName || buyerData.email,
+              avatar: buyerData.photoURL || null,
+            },
+            [sellerId]: {
+              name: sellerData.displayName || sellerData.email,
+              avatar: sellerData.photoURL || null,
+            }
+          },
+          lastMessageTimestamp: serverTimestamp(),
+          lastMessagePreview: `À propos de : ${listing.title}`,
+          listingId: listing.id,
+          listingTitle: listing.title,
+          listingPrice: listing.price,
+          listingImage: listing.images?.[0] || null
+        };
+
+        const newChatRef = await addDoc(chatsRef, newChatData);
+
+        // 5. Envoyer un 1er message automatique
+        const firstMessage = `Bonjour ! Je suis intéressé(e) par votre annonce : "${listing.title}".`;
+
+        await addDoc(collection(db, 'chats', newChatRef.id, 'messages'), {
+          text: firstMessage,
+          createdAt: serverTimestamp(),
+          userId: buyerId,
+        });
+
+        // Mettre à jour le dernier message
+        await updateDoc(doc(db, 'chats', newChatRef.id), {
+          lastMessagePreview: firstMessage,
+          lastMessageTimestamp: serverTimestamp()
+        });
+
+        // 6. Naviguer vers le nouveau chat
+        router.push(`/chat/${newChatRef.id}`);
+      }
+
+    } catch (error) {
+      console.error("Erreur lors de la création du chat:", error);
+      Alert.alert("Erreur", "Impossible de démarrer la conversation.");
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   const handleImageScroll = (event) => {
@@ -192,10 +296,15 @@ const ListingDetailScreen = () => {
           <Ionicons name="heart-outline" size={24} color="#34D399" />
         </TouchableOpacity>
         <TouchableOpacity 
-          style={styles.contactButton}
+          style={[styles.contactButton, contactLoading && styles.disabledButton]}
           onPress={handleContactSeller}
+          disabled={contactLoading}
         >
-          <Text style={styles.contactButtonText}>Contacter le vendeur</Text>
+          {contactLoading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.contactButtonText}>Contacter le vendeur</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
