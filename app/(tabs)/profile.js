@@ -118,6 +118,12 @@ export default function ProfileScreen() {
           />
           <View style={styles.divider} />
           <ProfileRow
+            icon={<Ionicons name="bag-handle-outline" size={22} color="#4B5563" />}
+            label="Mes Achats"
+            onPress={() => router.push('/profile/MyOrdersScreen')}
+          />
+          <View style={styles.divider} />
+          <ProfileRow
             icon={<Ionicons name="settings-outline" size={22} color="#4B5563" />}
             label="Paramètres"
             onPress={() => router.push('SettingsScreen')}

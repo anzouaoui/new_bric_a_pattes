@@ -66,7 +66,7 @@ export default function SummaryScreen() {
     
     // Rediriger vers l'écran de livraison avec les informations nécessaires
     router.push({
-      pathname: '/(checkout)/ShippingAddressScreen      ',
+      pathname: '/(checkout)/ShippingAddressScreen',
       params: {
         listingId: listing.id,
         total: orderSummary.total.toString()
