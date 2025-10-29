@@ -43,7 +43,7 @@ export default function SettingsScreen() {
           <SettingsRow 
             icon="lock-closed-outline"
             label="Préférences de confidentialité"
-            onPress={() => console.log("Privacy preferences")}
+            onPress={() => router.push('settings/PrviacyPreferenceScreen')}
           />
         </View>
 
