@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Image, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { useRouter } from 'expo-router';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../../firebaseConfig';
 
 // Composant pour afficher une ligne de commande

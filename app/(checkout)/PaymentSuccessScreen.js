@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../../firebaseConfig';
 
 // Composant réutilisable pour afficher une ligne de détail
@@ -120,7 +120,7 @@ export default function PaymentSuccessScreen() {
         {/* Bouton Voir mes commandes */}
         <TouchableOpacity 
           style={styles.primaryButton}
-          onPress={() => router.replace('/(tabs)/profile/my-orders')}
+          onPress={() => router.replace('/(tabs)/profile/MyOrdersScreen')}
         >
           <Text style={styles.primaryButtonText}>Voir mes commandes</Text>
         </TouchableOpacity>

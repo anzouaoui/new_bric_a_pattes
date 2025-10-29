@@ -1,18 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  collection, 
+  addDoc, 
+  writeBatch,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 
 // Composant réutilisable pour les champs de formulaire
@@ -121,58 +129,128 @@ export default function ShippingAddressScreen() {
       return;
     }
 
+    if (!auth.currentUser) {
+      Alert.alert('Non connecté', 'Veuvez-vous connecter pour effectuer un achat');
+      return;
+    }
+
     setPaymentLoading(true);
 
     try {
-      // Sauvegarder l'adresse si demandé
+      // 1. Sauvegarder l'adresse si demandé
       if (saveAddress) {
         await saveUserAddress();
       }
 
-      // --- LOGIQUE DE PAIEMENT REVENUECAT (Placeholder) ---
-      console.log('Début du processus de paiement pour l\'annonce:', listingId);
-      console.log('Montant total:', total);
+      // 2. Récupérer les détails de l'annonce
+      const listingDoc = await getDoc(doc(db, 'listings', listingId));
+      if (!listingDoc.exists()) {
+        throw new Error("L'annonce n'existe plus");
+      }
+      const listingData = listingDoc.data();
+
+      // 3. Vérifier si l'annonce est toujours disponible
+      if (listingData.status === 'sold' || listingData.status === 'reserved') {
+        throw new Error("Désolé, cette annonce n'est plus disponible");
+      }
+
+      // 4. Créer l'objet de commande
+      const orderData = {
+        listingId,
+        sellerId: listingData.userId,
+        buyerId: auth.currentUser.uid,
+        buyerName: auth.currentUser.displayName || auth.currentUser.email,
+        listingTitle: listingData.title,
+        listingPrice: listingData.price,
+        listingImage: listingData.imageUrls?.[0] || null,
+        amount: parseFloat(total),
+        status: 'pending_payment',
+        paymentStatus: 'pending',
+        deliveryMethod,
+        shippingAddress: deliveryMethod === 'domicile' ? {
+          firstName,
+          lastName,
+          addressLine1,
+          addressLine2,
+          postalCode,
+          city,
+          country
+        } : { 
+          method: 'pickup',
+          pickupAddress: listingData.pickupAddress || 'À définir avec le vendeur'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // 5. Démarrer une transaction batch pour des opérations atomiques
+      const batch = writeBatch(db);
       
-      // Simuler un délai de paiement
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 6. Référence du document de commande
+      const orderRef = doc(collection(db, 'orders'));
       
-      // 1. Obtenir le 'package' RevenueCat
-      // const { package } = await getRevenueCatPackage(listingId);
+      // 7. Ajouter la commande au batch
+      batch.set(orderRef, orderData);
       
-      // 2. Lancer l'achat
-      // const { customerInfo, productIdentifier } = await Purchases.purchasePackage(package);
+      // 8. Mettre à jour le statut de l'annonce
+      batch.update(doc(db, 'listings', listingId), {
+        status: 'reserved',
+        reservedAt: new Date().toISOString(),
+        reservedBy: auth.currentUser.uid,
+        orderId: orderRef.id,
+        updatedAt: new Date().toISOString()
+      });
       
-      // 3. Si succès, mettre à jour Firestore
-      // await updateDoc(doc(db, 'listings', listingId), { 
-      //   status: 'sold', 
-      //   buyerId: auth.currentUser.uid,
-      //   soldAt: new Date().toISOString()
-      // });
-      
-      // 4. Créer un document 'order'
-      // const orderData = {
-      //   listingId,
-      //   sellerId: listing.userId,
-      //   buyerId: auth.currentUser.uid,
-      //   amount: parseFloat(total),
-      //   status: 'completed',
-      //   shippingAddress: deliveryMethod === 'domicile' ? {
-      //     firstName,
-      //     lastName,
-      //     addressLine1,
-      //     addressLine2,
-      //     postalCode,
-      //     city,
-      //     country
-      //   } : { method: 'pickup' },
-      //   createdAt: new Date().toISOString()
-      // };
-      // await addDoc(collection(db, 'orders'), orderData);
-      
-      console.log('Paiement réussi (simulation)');
-      
-      // 5. Naviguer vers l'écran de succès
-      router.replace(`/(checkout)/payment-success?orderId=simulated-order-${Date.now()}`);
+      // 9. Exécuter la transaction
+      await batch.commit();
+
+      // 10. Simuler le processus de paiement (à remplacer par votre logique de paiement)
+      try {
+        // Ici, vous intégrerez votre solution de paiement (Stripe, PayPal, etc.)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Mise à jour du statut après paiement réussi
+        await updateDoc(orderRef, {
+          status: 'paid',
+          paymentStatus: 'completed',
+          paidAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Mettre à jour le statut de l'annonce
+        await updateDoc(doc(db, 'listings', listingId), {
+          status: 'sold',
+          soldAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        
+        console.log('Paiement réussi, commande créée:', orderRef.id);
+        
+        // Rediriger vers l'écran de succès avec l'ID de commande
+        router.replace(`/(checkout)/PaymentSuccessScreen?orderId=${orderRef.id}`);
+        
+      } catch (paymentError) {
+        console.error('Erreur lors du paiement:', paymentError);
+        
+        // En cas d'échec du paiement, mettre à jour le statut
+        await updateDoc(orderRef, {
+          status: 'payment_failed',
+          paymentStatus: 'failed',
+          updatedAt: new Date().toISOString(),
+          error: paymentError.message
+        });
+        
+        // Libérer la réservation de l'annonce
+        await updateDoc(doc(db, 'listings', listingId), {
+          status: 'available',
+          reservedAt: null,
+          reservedBy: null,
+          orderId: null,
+          updatedAt: new Date().toISOString()
+        });
+        
+        throw new Error('Le paiement a échoué. Veuillez réessayer ou utiliser un autre moyen de paiement.');
+      }
       
     } catch (error) {
       console.error('Erreur lors du paiement:', error);
