@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '../../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth, db } from '../../firebaseConfig';
 
 const ProfileRow = ({ icon, label, badge, onPress }) => (
   <TouchableOpacity style={styles.profileRow} onPress={onPress}>
@@ -87,7 +87,7 @@ export default function ProfileScreen() {
 
           <TouchableOpacity 
             style={styles.editButton}
-            onPress={() => router.push('/profile/edit-profile')}
+            onPress={() => router.push('/profile/EditProfilScreen')}
           >
             <Text style={styles.editButtonText}>Modifier le profil</Text>
           </TouchableOpacity>

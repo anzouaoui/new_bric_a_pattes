@@ -1,8 +1,8 @@
 // Fichier: app/_layout.tsx
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-// IMPORTS AJOUTÉS/MODIFIÉS
+import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { ThemeProvider as CustomThemeProvider } from '@/contexts/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
 import { User } from 'firebase/auth'; // Importer le type User
 import { useEffect, useState } from 'react';
@@ -62,14 +62,14 @@ export default function RootLayout() {
 
   // L'état est connu, on affiche la navigation STABLE
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <CustomThemeProvider>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
-      {/*
-        CHANGEMENT PRINCIPAL : 
-        Il n'y a PLUS de condition '!user' ici.
-        Le Stack déclare TOUTES les routes, TOUT LE TEMPS.
-      */}
+      {/**
+       * CHANGEMENT PRINCIPAL : 
+       * Il n'y a PLUS de condition '!user' ici.
+       * Le Stack déclare TOUTES les routes, TOUT LE TEMPS.
+       */}
       <Stack>
         {/* Groupe 1: Auth */}
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -84,13 +84,9 @@ export default function RootLayout() {
             headerShown: false,
             presentation: 'modal',
             animation: 'slide_from_bottom'
-          }} 
+          }}
         />
-        
-        {/* Écrans globaux (au même niveau que les groupes) */}
-        <Stack.Screen name="listing/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
       </Stack>
-    </ThemeProvider>
+    </CustomThemeProvider>
   );
 }
