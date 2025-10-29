@@ -26,11 +26,17 @@ const ListingCard = ({ item, onPress }) => (
     style={styles.cardContainer}
     onPress={() => onPress(item)}
   >
-    <Image 
-      source={{ uri: item.imageUrl }} 
-      style={styles.cardImage} 
-      resizeMode="cover"
-    />
+    {item.imageUrls && item.imageUrls.length > 0 ? (
+      <Image 
+        source={{ uri: item.imageUrls[0] }} 
+        style={styles.cardImage} 
+        resizeMode="cover"
+      />
+    ) : (
+      <View style={[styles.cardImage, {backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center'}]}>
+        <Ionicons name="image-outline" size={40} color="#ccc" />
+      </View>
+    )}
     <TouchableOpacity style={styles.likeButton}>
       <Ionicons name="heart-outline" size={24} color="#000" />
     </TouchableOpacity>
@@ -276,8 +282,9 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: 150,
-    borderRadius: 8,
-    marginBottom: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    backgroundColor: '#f8f8f8',
   },
   likeButton: {
     position: 'absolute',
