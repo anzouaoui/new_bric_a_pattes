@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { db } from '../../firebaseConfig';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { db } from '../../firebaseConfig';
 
 export default function BoostOptions() {
   const [selectedBoost, setSelectedBoost] = useState(null);
@@ -34,7 +34,7 @@ export default function BoostOptions() {
     
     const price = selectedBoost === '3jours' ? 2.99 : 5.99;
     router.push({
-      pathname: '/(boost)/payment',
+      pathname: '/(boost)/PaymentsScreen',
       params: { 
         listingId, 
         boostType: selectedBoost, 
