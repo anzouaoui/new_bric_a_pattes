@@ -41,6 +41,29 @@ export default function OrderTrackingScreen() {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const { currentUser } = auth;
 
+  // Fonction pour confirmer la réception
+  const handleConfirmReceipt = async () => {
+    try {
+      setConfirmLoading(true);
+      await updateDoc(doc(db, 'orders', id), {
+        status: 'delivered',
+        deliveredAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      Alert.alert('Succès', 'La réception de votre commande a été confirmée');
+    } catch (error) {
+      console.error('Erreur lors de la confirmation de réception:', error);
+      Alert.alert('Erreur', 'Impossible de confirmer la réception');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  // Fonction pour signaler un problème
+  const handleReportProblem = () => {
+    router.push(`/report-problem/${id}`);
+  };
+
   // Récupérer les détails de la commande
   useEffect(() => {
     if (!id) return;
@@ -229,30 +252,34 @@ export default function OrderTrackingScreen() {
       </ScrollView>
 
       {/* Boutons d'action */}
-      {(order.status === 'shipped' || order.status === 'delivered') && (
-        <View style={styles.footer}>
-          <TouchableOpacity 
-            style={[styles.confirmButton, confirmLoading && styles.disabledButton]}
-            onPress={handleConfirmReception}
-            disabled={confirmLoading}
-          >
-            {confirmLoading ? (
-              <ActivityIndicator color="#4B5563" />
-            ) : (
-              <Text style={styles.confirmButtonText}>
-                {order.status === 'delivered' ? 'Confirmer la réception' : 'Marquer comme reçu'}
-              </Text>
-            )}
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.reportButton}
-            onPress={() => router.push(`/report-problem/${id}`)}
-          >
-            <Text style={styles.reportButtonText}>Signaler un problème</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.footer}>
+        <TouchableOpacity 
+          style={[
+            styles.confirmButton, 
+            (confirmLoading || !['shipped', 'delivered'].includes(order.status)) && styles.disabledButton
+          ]}
+          onPress={handleConfirmReception}
+          disabled={confirmLoading || !['shipped', 'delivered'].includes(order.status)}
+        >
+          {confirmLoading ? (
+            <ActivityIndicator color="#4B5563" />
+          ) : (
+            <Text style={[
+              styles.confirmButtonText,
+              !['shipped', 'delivered'].includes(order.status) && styles.disabledText
+            ]}>
+              {order.status === 'delivered' ? 'Confirmer la réception' : 'Marquer comme reçu'}
+            </Text>
+          )}
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.reportButton}
+          onPress={() => router.push(`/report-problem/${id}`)}
+        >
+          <Text style={styles.reportButtonText}>Signaler un problème</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -447,36 +474,45 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
+  // Styles pour les boutons d'action
   footer: {
     padding: 16,
     backgroundColor: 'white',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
+  // Bouton principal (confirmer la réception)
   confirmButton: {
-    backgroundColor: '#E5E7EB',
-    padding: 16,
+    backgroundColor: '#10B981',
     borderRadius: 8,
+    padding: 16,
     alignItems: 'center',
     marginBottom: 12,
   },
   confirmButtonText: {
-    color: '#4B5563',
+    color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
   },
-  disabledButton: {
-    opacity: 0.7,
-  },
+  // Bouton secondaire (signaler un problème)
   reportButton: {
-    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
     borderRadius: 8,
+    padding: 16,
     alignItems: 'center',
-    backgroundColor: '#FEE2E2',
   },
   reportButtonText: {
-    color: '#DC2626',
+    color: '#374151',
     fontWeight: '600',
     fontSize: 16,
+  },
+  // États désactivés
+  disabledButton: {
+    backgroundColor: '#E5E7EB',
+  },
+  disabledText: {
+    color: '#9CA3AF',
   },
 });
