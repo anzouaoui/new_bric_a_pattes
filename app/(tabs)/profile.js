@@ -98,7 +98,7 @@ export default function ProfileScreen() {
             icon={<Ionicons name="pricetag-outline" size={22} color="#4B5563" />}
             label="Mes Annonces"
             badge={listingCount}
-            onPress={() => router.push('/profile/my-listings')}
+            onPress={() => router.push('/profile/MyListingsScreen')}
           />
           <View style={styles.divider} />
           <ProfileRow
