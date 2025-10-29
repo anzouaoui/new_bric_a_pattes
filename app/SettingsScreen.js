@@ -81,7 +81,7 @@ export default function SettingsScreen() {
           <SettingsRow 
             icon="mail-outline"
             label="Nous contacter"
-            onPress={() => console.log("Contact us")}
+            onPress={() => router.push('settings/ContactSupportScreen')}
           />
         </View>
 

@@ -1,19 +1,17 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { 
-  collection, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  arrayUnion, 
-  arrayRemove 
-} from 'firebase/firestore';
-import { useEffect, useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
-  ActivityIndicator,
-  Dimensions,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc
+} from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator, Alert, Dimensions,
   FlatList,
   Image,
   StyleSheet,
@@ -317,7 +315,7 @@ export default function HomeScreen() {
       <TouchableOpacity 
         style={styles.fab}
         // <--- FIX 4: Utilisation de router.push
-        onPress={() => router.push('/(sell-stack)/select-category')}
+        onPress={() => router.push('/(sell-stack)/SelectCategoryScreen')}
       >
         <Feather name="plus" size={30} color="#FFF" />
       </TouchableOpacity>

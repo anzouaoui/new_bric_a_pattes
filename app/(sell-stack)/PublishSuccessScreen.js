@@ -22,25 +22,37 @@ export default function PublishSuccessScreen() {
           Votre annonce est maintenant visible par les autres utilisateurs.
         </Text>
 
-        {/* Bouton Voir mon annonce */}
+        {/* Bouton Booster mon annonce (Nouveau CTA Primaire) */}
         <TouchableOpacity 
           style={styles.primaryButton}
           onPress={() => {
-            router.replace({
-              pathname: '/listing-detail',
-              params: { id: newListingId }
+            router.push({
+              pathname: '/(boost)/boost-options',
+              params: { listingId: newListingId }
             });
           }}
         >
-          <Text style={styles.primaryButtonText}>Voir mon annonce</Text>
+          <Text style={styles.primaryButtonText}>Booster mon annonce</Text>
         </TouchableOpacity>
 
-        {/* Bouton Retour à l'accueil */}
+        {/* Bouton Voir mon annonce (Nouveau CTA Secondaire) */}
         <TouchableOpacity 
           style={styles.secondaryButton}
+          onPress={() => {
+            router.push({
+              pathname: `/listing/${newListingId}`,
+            });
+          }}
+        >
+          <Text style={styles.secondaryButtonText}>Voir mon annonce</Text>
+        </TouchableOpacity>
+
+        {/* Bouton Retour à l'accueil (Tertiaire) */}
+        <TouchableOpacity 
+          style={styles.tertiaryButton}
           onPress={() => router.replace('/(tabs)/')}
         >
-          <Text style={styles.secondaryButtonText}>Retourner à l'accueil</Text>
+          <Text style={styles.tertiaryButtonText}>Retourner à l'accueil</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -82,6 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 24,
     paddingHorizontal: 20,
+    marginBottom: 8,
   },
   primaryButton: {
     backgroundColor: '#34D399',
@@ -102,10 +115,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   secondaryButton: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#34D399',
+    borderWidth: 1.5,
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
+    marginTop: 16,
+  },
+  secondaryButtonText: {
+    color: '#34D399',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  tertiaryButton: {
     padding: 12,
     marginTop: 12,
   },
-  secondaryButtonText: {
+  tertiaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
