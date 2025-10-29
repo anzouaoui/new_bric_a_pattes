@@ -1,7 +1,16 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router'; // <--- FIX 1: Importer useRouter
-import { collection, getDocs } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  arrayUnion, 
+  arrayRemove 
+} from 'firebase/firestore';
+import { useEffect, useState, useCallback } from 'react';
+import { Alert } from 'react-native';
 import {
   ActivityIndicator,
   Dimensions,
@@ -14,37 +23,53 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 import FilterModal from '../FilterModal';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
 const CARD_WIDTH = (width - 16 - (CARD_MARGIN * 4)) / 2;
 
-const ListingCard = ({ item, onPress }) => (
-  <TouchableOpacity 
-    style={styles.cardContainer}
-    onPress={() => onPress(item)}
-  >
-    {item.imageUrls && item.imageUrls.length > 0 ? (
-      <Image 
-        source={{ uri: item.imageUrls[0] }} 
-        style={styles.cardImage} 
-        resizeMode="cover"
-      />
-    ) : (
-      <View style={[styles.cardImage, {backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center'}]}>
-        <Ionicons name="image-outline" size={40} color="#ccc" />
-      </View>
-    )}
-    <TouchableOpacity style={styles.likeButton}>
-      <Ionicons name="heart-outline" size={24} color="#000" />
+const ListingCard = ({ item, onPress, isFavorite, onToggleFavorite }) => {
+  // Gérer le clic sur le bouton de favori
+  const handleFavoritePress = (e) => {
+    e.stopPropagation(); // Empêcher la propagation de l'événement
+    onToggleFavorite();
+  };
+
+  return (
+    <TouchableOpacity 
+      style={styles.cardContainer}
+      onPress={() => onPress(item)}
+    >
+      {item.imageUrls && item.imageUrls.length > 0 ? (
+        <Image 
+          source={{ uri: item.imageUrls[0] }} 
+          style={styles.cardImage} 
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.cardImage, {backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center'}]}>
+          <Ionicons name="image-outline" size={40} color="#ccc" />
+        </View>
+      )}
+      <TouchableOpacity 
+        style={styles.likeButton}
+        onPress={handleFavoritePress}
+        activeOpacity={0.8}
+      >
+        <Ionicons 
+          name={isFavorite ? 'heart' : 'heart-outline'} 
+          size={24} 
+          color={isFavorite ? '#EF4444' : '#000'} 
+        />
+      </TouchableOpacity>
+      <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+      <Text style={styles.cardPrice}>{item.price} €</Text>
+      <Text style={styles.cardLocation} numberOfLines={1}>{item.location}</Text>
     </TouchableOpacity>
-    <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-    <Text style={styles.cardPrice}>{item.price} €</Text>
-    <Text style={styles.cardLocation} numberOfLines={1}>{item.location}</Text>
-  </TouchableOpacity>
-);
+  );
+};
 
 // <--- FIX 3: 'EmptyState' reçoit 'onSellPress' au lieu de 'navigation'
 const EmptyState = ({ onSellPress }) => (
@@ -74,7 +99,9 @@ const EmptyState = ({ onSellPress }) => (
 
 // <--- FIX 2: Retrait de { navigation } des props
 export default function HomeScreen() {
-  const router = useRouter(); // <--- FIX 2: Utilisation du hook
+  const router = useRouter();
+  const { currentUser } = auth;
+  const [favoriteIds, setFavoriteIds] = useState(new Set()); // <--- FIX 2: Utilisation du hook
   
   // États pour les filtres
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
@@ -141,14 +168,79 @@ export default function HomeScreen() {
   };
 
   // Chargement initial des annonces
+  // Récupérer les favoris de l'utilisateur
+  const fetchUserFavorites = async () => {
+    if (!currentUser) return;
+
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setFavoriteIds(new Set(userData.favorites || []));
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des favoris:", error);
+    }
+  };
+
+  // Gérer le basculement des favoris
+  const handleToggleFavorite = async (listingId) => {
+    if (!currentUser) {
+      Alert.alert("Connexion requise", "Connectez-vous pour ajouter des favoris.");
+      return;
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const isCurrentlyFavorite = favoriteIds.has(listingId);
+    const newFavoriteIds = new Set(favoriteIds);
+
+    try {
+      if (isCurrentlyFavorite) {
+        await updateDoc(userRef, {
+          favorites: arrayRemove(listingId)
+        });
+        newFavoriteIds.delete(listingId);
+      } else {
+        await updateDoc(userRef, {
+          favorites: arrayUnion(listingId)
+        });
+        newFavoriteIds.add(listingId);
+      }
+      setFavoriteIds(newFavoriteIds);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour des favoris:", error);
+    }
+  };
+
+  // Charger les annonces et les favoris
   useEffect(() => {
     fetchListings(activeFilters);
-  }, []);
+  }, [activeFilters]);
+
+  // Rafraîchir les favoris à chaque fois que l'écran devient actif
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserFavorites();
+    }, [currentUser])
+  );
   
   // Fonction pour gérer l'application des filtres
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters);
     fetchListings(filters);
+  };
+
+  const renderListingItem = ({ item }) => {
+    const isFavorite = favoriteIds.has(item.id);
+    return (
+      <ListingCard 
+        item={item} 
+        onPress={(item) => router.push(`/listing/${item.id}`)}
+        isFavorite={isFavorite}
+        onToggleFavorite={() => handleToggleFavorite(item.id)}
+      />
+    );
   };
 
   const handleListingPress = (item) => {
@@ -198,12 +290,17 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <ListingCard 
-              item={item} 
-              onPress={handleListingPress} 
-            />
-          )}
+          renderItem={({ item }) => {
+            const isFavorite = favoriteIds.has(item.id);
+            return (
+              <ListingCard 
+                item={item} 
+                onPress={handleListingPress}
+                isFavorite={isFavorite}
+                onToggleFavorite={() => handleToggleFavorite(item.id)}
+              />
+            );
+          }}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={<View style={{ height: 16 }} />}
           ListEmptyComponent={
