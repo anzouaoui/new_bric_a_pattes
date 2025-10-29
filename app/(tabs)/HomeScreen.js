@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router'; // <--- FIX 1: Importer useRouter
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -92,22 +92,34 @@ export default function HomeScreen() {
   const fetchListings = async (filters = {}) => {
     try {
       setIsLoading(true);
-      let q = collection(db, 'listings');
       
-      // Ajouter des conditions de filtrage si des filtres sont actifs
-      if (filters.categories && filters.categories.length > 0) {
-        q = query(q, where('category', 'in', filters.categories));
-      }
-      
-      const querySnapshot = await getDocs(q);
-      const listingsData = [];
+      // Récupérer toutes les annonces sans filtre initial
+      const querySnapshot = await getDocs(collection(db, 'listings'));
+      let listingsData = [];
       
       querySnapshot.forEach((doc) => {
         listingsData.push({ id: doc.id, ...doc.data() });
       });
       
-      // Filtrer par prix côté client (car les requêtes Firestore ne prennent pas en charge les plages directement)
-      let filteredData = listingsData.filter(item => {
+      // Trier par date de création (les plus récentes en premier)
+      listingsData.sort((a, b) => {
+        const dateA = a.createdAt?.toDate() || new Date(0);
+        const dateB = b.createdAt?.toDate() || new Date(0);
+        return dateB - dateA;
+      });
+
+      // Appliquer les filtres
+      let filteredData = [...listingsData];
+      
+      // Filtrer par catégorie
+      if (filters.categories && filters.categories.length > 0) {
+        filteredData = filteredData.filter(item => 
+          item.category && filters.categories.includes(item.category)
+        );
+      }
+      
+      // Filtrer par prix
+      filteredData = filteredData.filter(item => {
         const price = parseFloat(item.price) || 0;
         return price >= filters.priceRange[0] && price <= filters.priceRange[1];
       });
@@ -177,9 +189,8 @@ export default function HomeScreen() {
 
       {/* Liste des annonces */}
       {listings.length === 0 ? (
-        // <--- FIX 3: Appel de EmptyState avec la nouvelle prop
         <EmptyState 
-          onSellPress={() => router.push('/(sell-stack)/select-category')} 
+          onSellPress={() => router.push('SelectCategoryScreen')} 
         />
       ) : (
         <FlatList
@@ -189,6 +200,13 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={<View style={{ height: 16 }} />}
+          ListEmptyComponent={
+            <View style={styles.emptyResults}>
+              <Text style={styles.emptyResultsText}>
+                Aucune annonce ne correspond à vos critères de recherche.
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <ListingCard item={item} onPress={handleListingPress} />
           )}
@@ -264,8 +282,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   listContent: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
+    paddingHorizontal: 8,
+    paddingBottom: 20,
+    flexGrow: 1,
+  },
+  emptyResults: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyResultsText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 16,
+    marginTop: 20,
   },
   cardContainer: {
     width: CARD_WIDTH,

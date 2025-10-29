@@ -1,0 +1,114 @@
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
+
+export default function PublishSuccessScreen() {
+  const router = useRouter();
+  const { newListingId } = useLocalSearchParams();
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        {/* Cercle vert avec icône de validation */}
+        <View style={styles.iconContainer}>
+          <Ionicons name="checkmark-done" size={48} color="#34D399" />
+        </View>
+
+        {/* Titre */}
+        <Text style={styles.title}>Annonce publiée avec succès !</Text>
+        
+        {/* Description */}
+        <Text style={styles.description}>
+          Votre annonce est maintenant visible par les autres utilisateurs.
+        </Text>
+
+        {/* Bouton Voir mon annonce */}
+        <TouchableOpacity 
+          style={styles.primaryButton}
+          onPress={() => {
+            router.replace({
+              pathname: '/listing-detail',
+              params: { id: newListingId }
+            });
+          }}
+        >
+          <Text style={styles.primaryButtonText}>Voir mon annonce</Text>
+        </TouchableOpacity>
+
+        {/* Bouton Retour à l'accueil */}
+        <TouchableOpacity 
+          style={styles.secondaryButton}
+          onPress={() => router.replace('/(tabs)/')}
+        >
+          <Text style={styles.secondaryButtonText}>Retourner à l'accueil</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#E0F2F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 24,
+    color: '#111827',
+    lineHeight: 34,
+  },
+  description: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  primaryButton: {
+    backgroundColor: '#34D399',
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
+    marginTop: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    padding: 12,
+    marginTop: 12,
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    textAlign: 'center',
+  },
+});
