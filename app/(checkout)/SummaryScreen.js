@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../../firebaseConfig';
 
 // Composant réutilisable pour afficher une ligne de détail
@@ -61,27 +61,17 @@ export default function SummaryScreen() {
     }
   }, [listingId]);
 
-  const handlePayment = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Implémenter la logique de paiement avec RevenueCat
-      // 1. Obtenir le package RevenueCat
-      // 2. Lancer l'achat
-      // 3. Gérer la réussite/échec
-      
-      // Exemple de navigation vers l'écran de succès (à décommenter plus tard)
-      // router.replace('/(checkout)/payment-success');
-      
-      console.log('Paiement en cours...');
-      // Simulation de chargement
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-    } catch (error) {
-      console.error('Erreur lors du paiement:', error);
-      // TODO: Afficher une alerte d'erreur
-    } finally {
-      setIsLoading(false);
-    }
+  const handlePayment = () => {
+    if (!listing) return;
+    
+    // Rediriger vers l'écran de livraison avec les informations nécessaires
+    router.push({
+      pathname: '/(checkout)/ShippingAddressScreen      ',
+      params: {
+        listingId: listing.id,
+        total: orderSummary.total.toString()
+      }
+    });
   };
 
   if (isLoading && !listing) {
@@ -169,6 +159,10 @@ export default function SummaryScreen() {
 
       {/* Pied de page avec bouton de paiement */}
       <View style={styles.footer}>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total à payer</Text>
+          <Text style={styles.totalAmount}>{orderSummary.total.toFixed(2)} €</Text>
+        </View>
         <TouchableOpacity 
           style={[styles.payButton, isLoading && styles.payButtonDisabled]}
           onPress={handlePayment}

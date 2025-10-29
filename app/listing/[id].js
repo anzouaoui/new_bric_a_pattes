@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  SafeAreaView,
-  Share,
-  Dimensions,
-  StyleSheet,
-  Alert,
-  ActivityIndicator
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { 
-  doc, 
-  getDoc, 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
   serverTimestamp,
   updateDoc,
-  arrayUnion,
-  arrayRemove
+  where
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { auth, db } from '../../firebaseConfig';
 
 const { width } = Dimensions.get('window');
@@ -354,15 +354,23 @@ const ListingDetailScreen = () => {
             color={isFavorite ? "#EF4444" : "#34D399"} 
           />
         </TouchableOpacity>
+        
         <TouchableOpacity 
-          style={[styles.contactButton, contactLoading && styles.disabledButton]}
+          style={[styles.actionButton, styles.buyButton]}
+          onPress={() => router.push(`/(checkout)/SummaryScreen?listingId=${id}`)}
+        >
+          <Text style={styles.buttonText}>Acheter</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.contactButton, contactLoading && styles.disabledButton]}
           onPress={handleContactSeller}
           disabled={contactLoading}
         >
           {contactLoading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.contactButtonText}>Contacter le vendeur</Text>
+            <Text style={styles.buttonText}>Contacter</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -501,10 +509,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    padding: 24,
+    padding: 16,
     borderTopWidth: 1,
     borderColor: '#EFEFEF',
     backgroundColor: '#FFFFFF',
+    gap: 8,
   },
   favoriteButton: {
     borderWidth: 1.5,
@@ -515,19 +524,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 56,
   },
-  contactButton: {
+  actionButton: {
     flex: 1,
-    marginLeft: 12,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#34D399',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  contactButtonText: {
+  contactButton: {
+    backgroundColor: '#34D399',
+  },
+  buyButton: {
+    backgroundColor: '#3B82F6',
+  },
+  buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 
