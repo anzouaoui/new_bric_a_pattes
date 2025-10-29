@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
-  View,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StyleSheet,
-  Platform,
+  View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
 const CONDITIONS = ['Neuf', 'Comme neuf', 'Bon état', 'Usé'];
 
@@ -28,7 +28,7 @@ export default function AddDetailsScreen() {
 
   const handleContinue = () => {
     router.push({
-      pathname: '/(sell-stack)/add-photos',
+      pathname: 'AddPhotosScreen',
       params: { 
         category,
         title,
