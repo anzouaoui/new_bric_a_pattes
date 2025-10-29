@@ -60,6 +60,7 @@ export default function SettingsScreen() {
           <SettingsRow 
             icon="language-outline"
             label="Langue"
+            onPress={() => router.push('settings/LanguageScreen')}
             rightComponent={
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: '#6B7280', marginRight: 4}}>Français</Text>
