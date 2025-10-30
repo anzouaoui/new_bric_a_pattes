@@ -47,6 +47,11 @@ export default function SettingsScreen() {
             onSwitchValueChange={setNotificationsEnabled}
           />
           <SettingsRow 
+            icon="notifications-outline"
+            label="Voir toutes les notifications"
+            onPress={() => router.push('/notifications')}
+          />
+          <SettingsRow 
             icon="language-outline"
             label="Langue"
             rightComponent={

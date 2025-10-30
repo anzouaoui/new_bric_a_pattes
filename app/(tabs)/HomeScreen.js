@@ -269,12 +269,21 @@ export default function HomeScreen() {
             placeholderTextColor="#9CA3AF"
           />
         </View>
-        <TouchableOpacity 
-          style={styles.filterButton} 
-          onPress={() => setIsFilterModalVisible(true)}
-        >
-          <Ionicons name="options-outline" size={28} color="#000" />
-        </TouchableOpacity>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity 
+            style={styles.filterButton} 
+            onPress={() => setIsFilterModalVisible(true)}
+          >
+            <Ionicons name="options-outline" size={28} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => router.push('/notifications')}
+          >
+            <Ionicons name="notifications-outline" size={24} color="#000" />
+          </TouchableOpacity>
+          
+        </View>
       </View>
 
       {/* Liste des annonces */}
@@ -374,10 +383,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1F2937',
   },
-  filterButton: {
-    marginLeft: 12,
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
     padding: 8,
-    marginLeft: 12,
+    marginLeft: 8,
+  },
+  filterButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   listContent: {
     paddingHorizontal: 8,
