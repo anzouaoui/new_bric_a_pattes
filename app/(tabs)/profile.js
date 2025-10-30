@@ -111,10 +111,15 @@ export default function ProfileScreen() {
           />
           <View style={styles.divider} />
           <ProfileRow
-            icon={<Ionicons name="heart-outline" size={22} color="#4B5563" />}
-            label="Mes Favoris"
+            icon={<Ionicons name="heart-outline" size={20} color="#4B5563" />}
+            label="Favoris"
             badge={favoriteCount}
-            onPress={() => router.push('/profile/MyfavoritsScreen')}
+            onPress={() => router.push('/favorites')}
+          />
+          <ProfileRow
+            icon={<Ionicons name="star-outline" size={20} color="#4B5563" />}
+            label="Mes Évaluations"
+            onPress={() => router.push('/profile/MyReviewsScreen')}
           />
           <View style={styles.divider} />
           <ProfileRow

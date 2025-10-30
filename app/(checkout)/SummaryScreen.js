@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { db } from '../../firebaseConfig';
+import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { auth, db } from '../../firebaseConfig';
 
 // Composant réutilisable pour afficher une ligne de détail
 const DetailRow = ({ label, value, isLast = false }) => (
@@ -25,6 +26,9 @@ export default function SummaryScreen() {
     total: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const functions = getFunctions();
+  const processOrder = httpsCallable(functions, 'processOrder');
 
   // Charger les détails de l'annonce
   useEffect(() => {
@@ -61,17 +65,68 @@ export default function SummaryScreen() {
     }
   }, [listingId]);
 
-  const handlePayment = () => {
-    if (!listing) return;
-    
-    // Rediriger vers l'écran de livraison avec les informations nécessaires
-    router.push({
-      pathname: '/(checkout)/ShippingAddressScreen',
-      params: {
-        listingId: listing.id,
-        total: orderSummary.total.toString()
+  const handleConfirmOrder = async () => {
+    if (!auth.currentUser) {
+      Alert.alert('Connexion requise', 'Veuvez-vous vous connecter pour passer commande ?', [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Se connecter', onPress: () => router.push('/(auth)/login') },
+      ]);
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // 1. Préparer les données de la commande
+      const orderData = {
+        itemTitle: listing.title,
+        itemPrice: listing.price,
+        shippingCost: orderSummary.shipping,
+        serviceFee: orderSummary.serviceFee,
+        totalAmount: orderSummary.total,
+        status: 'pending',
+        paymentStatus: 'pending',
+        shippingAddress: listing.shippingAddress || {},
+        sellerInfo: {
+          id: listing.userId,
+          name: listing.sellerName,
+        },
+        buyerInfo: {
+          id: auth.currentUser.uid,
+          name: auth.currentUser.displayName || 'Acheteur',
+        },
+      };
+
+      // 2. Appeler la fonction Cloud
+      const result = await processOrder({
+        listingId,
+        sellerId: listing.userId,
+        buyerId: auth.currentUser.uid,
+        orderData,
+      });
+
+      // 3. Rediriger vers l'écran de paiement avec l'ID de commande
+      if (result.data.success) {
+        router.push({
+          pathname: '/(checkout)/PaymentScreen',
+          params: { 
+            orderId: result.data.orderId,
+            amount: orderSummary.total,
+            itemName: listing.title,
+          },
+        });
+      } else {
+        throw new Error('Erreur lors de la création de la commande');
       }
-    });
+    } catch (error) {
+      console.error('Erreur lors de la commande:', error);
+      Alert.alert(
+        'Erreur',
+        error.message || 'Une erreur est survenue lors du traitement de votre commande. Veuillez réessayer.'
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (isLoading && !listing) {
@@ -164,14 +219,14 @@ export default function SummaryScreen() {
           <Text style={styles.totalAmount}>{orderSummary.total.toFixed(2)} €</Text>
         </View>
         <TouchableOpacity 
-          style={[styles.payButton, isLoading && styles.payButtonDisabled]}
-          onPress={handlePayment}
-          disabled={isLoading}
+          style={[styles.confirmButton, (isProcessing || !listing) && styles.disabledButton]} 
+          onPress={handleConfirmOrder}
+          disabled={isProcessing || !listing}
         >
-          {isLoading ? (
-            <ActivityIndicator color="white" />
+          {isProcessing ? (
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.payButtonText}>Valider et Payer</Text>
+            <Text style={styles.confirmButtonText}>Confirmer la commande</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -303,16 +358,18 @@ const styles = StyleSheet.create({
     borderTopColor: '#EFEFEF',
     backgroundColor: 'white',
   },
-  payButton: {
-    backgroundColor: '#10B981',
+  confirmButton: {
+    backgroundColor: '#000',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
+    marginTop: 8,
   },
-  payButtonDisabled: {
+  disabledButton: {
+    backgroundColor: '#9CA3AF',
     opacity: 0.7,
   },
-  payButtonText: {
+  confirmButtonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
