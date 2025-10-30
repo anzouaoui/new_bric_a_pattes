@@ -21,6 +21,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import NotificationIcon from '../../components/NotificationIcon';
 import { auth, db } from '../../firebaseConfig';
 import FilterModal from '../FilterModal';
 
@@ -276,13 +277,7 @@ export default function HomeScreen() {
           >
             <Ionicons name="options-outline" size={28} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.iconButton}
-            onPress={() => router.push('/notifications')}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#000" />
-          </TouchableOpacity>
-          
+          <NotificationIcon />
         </View>
       </View>
 

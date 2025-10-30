@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { firebase } from '../firebaseConfig';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
 import NotificationItem from '../components/NotificationItem';
+import { auth, db } from '../firebaseConfig';
 
 export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
@@ -11,29 +11,30 @@ export default function NotificationsScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = firebase.auth().currentUser;
+    const user = auth.currentUser;
     if (!user) {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = firebase
-      .firestore()
-      .collection('users')
-      .doc(user.uid)
-      .collection('notifications')
-      .orderBy('createdAt', 'desc')
-      .onSnapshot((querySnapshot) => {
+    const q = query(
+          collection(db, 'users', user.uid, 'notifications'),
+        );
+
+    const unsubscribe = onSnapshot(q,
+      (snapshot) => {
         const items = [];
-        querySnapshot.forEach((doc) => {
+        snapshot.forEach((doc) => {
           items.push({ id: doc.id, ...doc.data() });
         });
         setNotifications(items);
         setLoading(false);
-      }, (error) => {
+      },
+      (error) => {
         console.error("Error fetching notifications:", error);
         setLoading(false);
-      });
+      }
+    );
 
     return () => unsubscribe();
   }, []);
