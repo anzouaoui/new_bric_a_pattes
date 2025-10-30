@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  collection, 
-  addDoc, 
-  writeBatch,
-  serverTimestamp 
+import {
+  collection,
+  doc,
+  getDoc,
+  updateDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {

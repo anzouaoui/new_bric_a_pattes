@@ -25,11 +25,35 @@ const statusConfig = {
 
 const formatDate = (timestamp) => {
   try {
-    if (!timestamp) return '';
+    if (!timestamp) return 'Date inconnue';
+    
+    let date;
     
     // Si c'est un objet Firestore Timestamp
-    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
-      const date = timestamp.toDate();
+    if (timestamp && typeof timestamp === 'object' && timestamp.toDate && typeof timestamp.toDate === 'function') {
+      date = timestamp.toDate();
+    } 
+    // Si c'est déjà un objet Date
+    else if (timestamp instanceof Date) {
+      date = timestamp;
+    }
+    // Si c'est un timestamp numérique (secondes ou millisecondes)
+    else if (typeof timestamp === 'number') {
+      // Vérifier si c'est en secondes (10 chiffres) ou millisecondes (13 chiffres)
+      date = new Date(timestamp.toString().length === 10 ? timestamp * 1000 : timestamp);
+    }
+    // Si c'est une chaîne de caractères
+    else if (typeof timestamp === 'string') {
+      // Essayer de parser la date
+      date = new Date(timestamp);
+      // Si la date n'est pas valide
+      if (isNaN(date.getTime())) {
+        return timestamp; // Retourner la chaîne originale si elle ne peut pas être convertie
+      }
+    }
+    
+    // Si on a réussi à obtenir une date valide
+    if (date && !isNaN(date.getTime())) {
       return date.toLocaleDateString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
@@ -37,39 +61,12 @@ const formatDate = (timestamp) => {
       });
     }
     
-    // Si c'est déjà un objet Date
-    if (timestamp instanceof Date) {
-      return timestamp.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-    }
+    // Si aucun format reconnu, retourner une valeur par défaut
     
-    // Si c'est un timestamp numérique (millisecondes depuis epoch)
-    if (typeof timestamp === 'number') {
-      return new Date(timestamp).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-    }
-    
-    // Si c'est une chaîne de caractères de date
-    if (typeof timestamp === 'string') {
-      const date = new Date(timestamp);
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString('fr-FR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
-      }
-    }
-    
+    // Si on arrive ici, c'est qu'aucun format n'a été reconnu
     return 'Date inconnue';
   } catch (error) {
-    console.error('Erreur de formatage de la date:', error);
+    console.error('Erreur de formatage de la date:', error, 'Timestamp reçu:', timestamp);
     return 'Date invalide';
   }
 };
@@ -192,7 +189,7 @@ const MySales = () => {
         </TouchableOpacity>
         <Text style={styles.title}>Mes Ventes</Text>
         <View style={styles.headerPlaceholder} />
-      </View>
+      </View> 
 
       {/* Tabs */}
       <ScrollView 
