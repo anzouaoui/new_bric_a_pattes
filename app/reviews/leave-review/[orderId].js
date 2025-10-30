@@ -26,12 +26,13 @@ export default function LeaveReviewScreen() {
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
-  const [sellerId, setSellerId] = useState(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [order, setOrder] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isBuyer, setIsBuyer] = useState(false);
+  const [targetUser, setTargetUser] = useState({ id: null, name: '' });
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -42,7 +43,17 @@ export default function LeaveReviewScreen() {
         if (orderDoc.exists()) {
           const orderData = { id: orderDoc.id, ...orderDoc.data() };
           setOrder(orderData);
-          setSellerId(orderData.sellerId);
+          
+          // Déterminer si l'utilisateur actuel est l'acheteur ou le vendeur
+          const currentUserId = auth.currentUser?.uid;
+          const isUserBuyer = currentUserId === orderData.buyerId;
+          setIsBuyer(isUserBuyer);
+          
+          // Définir la cible de l'avis
+          setTargetUser({
+            id: isUserBuyer ? orderData.sellerId : orderData.buyerId,
+            name: isUserBuyer ? orderData.sellerName : orderData.buyerName
+          });
         } else {
           setError('Commande non trouvée');
         }
@@ -73,16 +84,18 @@ export default function LeaveReviewScreen() {
     setError('');
 
     try {
+      const currentUserId = auth.currentUser.uid;
       const reviewData = {
         orderId,
-        sellerId,
-        buyerId: auth.currentUser.uid,
+        sourceId: currentUserId, // Celui qui laisse l'avis
+        targetId: targetUser.id, // Celui qui est évalué
         rating,
         comment: comment.trim(),
         createdAt: serverTimestamp(),
-        role: 'buyer',
+        role: isBuyer ? 'buyer' : 'seller',
         itemTitle: order?.itemTitle,
-        sellerName: order?.sellerName
+        targetName: targetUser.name,
+        orderDate: order?.createdAt
       };
 
       // Créer un nouvel avis
@@ -91,7 +104,11 @@ export default function LeaveReviewScreen() {
 
       // Mettre à jour la commande pour indiquer que l'avis a été laissé
       const orderRef = doc(db, 'orders', orderId);
-      await setDoc(orderRef, { buyerReviewLeft: true }, { merge: true });
+      const updateData = isBuyer 
+        ? { buyerReviewLeft: true }
+        : { sellerReviewLeft: true };
+      
+      await setDoc(orderRef, updateData, { merge: true });
 
       // Rediriger vers l'écran précédent ou l'écran des commandes
       router.back();
@@ -129,13 +146,23 @@ export default function LeaveReviewScreen() {
       />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Comment s'est passé votre achat ?</Text>
-        <Text style={styles.subtitle}>Votre avis aidera les autres acheteurs</Text>
+        <Text style={styles.title}>
+          {isBuyer ? 'Évaluer le vendeur' : 'Évaluer l\'acheteur'}
+          {targetUser.name && ` ${targetUser.name}`}
+        </Text>
+        
+        <Text style={styles.subtitle}>
+          {isBuyer 
+            ? 'Votre avis aidera les autres acheteurs' 
+            : 'Votre avis aidera les autres vendeurs'}
+        </Text>
         
         {order && (
           <View style={styles.orderInfo}>
             <Text style={styles.orderText}>Article : {order.itemTitle}</Text>
-            <Text style={styles.orderText}>Vendeur : {order.sellerName}</Text>
+            <Text style={styles.orderText}>
+              {isBuyer ? 'Vendeur' : 'Acheteur'} : {targetUser.name}
+            </Text>
           </View>
         )}
 
@@ -148,7 +175,11 @@ export default function LeaveReviewScreen() {
           <Text style={styles.commentLabel}>Votre avis (optionnel) :</Text>
           <TextInput
             style={styles.commentInput}
-            placeholder="Décrivez votre expérience d'achat..."
+            placeholder={
+              isBuyer 
+                ? "Comment évaluez-vous l'article, l'envoi et la communication du vendeur ?"
+                : "Comment évaluez-vous la rapidité de paiement et la communication de l'acheteur ?"
+            }
             value={comment}
             onChangeText={setComment}
             multiline
