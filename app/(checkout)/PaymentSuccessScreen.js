@@ -102,7 +102,7 @@ export default function PaymentSuccessScreen() {
           <View style={styles.divider} />
           <DetailRow 
             label="Total payé" 
-            value={`${orderDetails?.totalPaid?.toFixed(2) || '0.00'} €`} 
+            value={`${orderDetails?.total?.toFixed(2) || '0.00'} €`} 
             isBold={true}
           />
         </Card>
