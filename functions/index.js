@@ -1,59 +1,112 @@
-// Fichier: functions/index.js (Syntaxe V2)
+// Fichier : functions/index.js
 
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-const { logger } = require("firebase-functions");
-const admin = require("firebase-admin");
-const sgMail = require("@sendgrid/mail");
+// 1. Initialisation des modules Firebase Admin
+const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
+// ⚠️ INITIALISATION CRITIQUE DE L'ADMIN SDK
+// Cette ligne doit être appelée une seule fois.
+// Elle permet à la fonction de communiquer avec votre base de données et de valider les jetons.
 admin.initializeApp();
 
-// On lit la clé depuis les variables d'environnement (fichier .env)
-// Cela fonctionnera au moment du déploiement.
-const SENDGRID_API_KEY = "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";
-sgMail.setApiKey(SENDGRID_API_KEY);
+const db = admin.firestore();
+const HttpsError = functions.https.HttpsError; // Raccourci pour les erreurs
 
-// Définition de la fonction V2
-exports.sendSupportEmail = onDocumentCreated(
-  {
-    // C'est ici qu'on définit la région et le document
-    document: "supportTickets/{ticketId}",
-    region: "europe-west1",
-  },
-  async (event) => {
+// 2. Définition de la Cloud Function
+exports.processOrder = functions.https.onCall(async (data, context) => {
+    // Log de débogage initial
+    console.log('[CF_DEBUG] Données brutes reçues:', JSON.stringify({
+        data,
+        auth: context.auth ? 'Authentifié' : 'Non authentifié'
+    }, null, 2));
+    // --- VÉRIFICATION D'AUTHENTIFICATION CÔTÉ SERVEUR (Obligatoire pour Https.onCall) ---
+    // Si context.auth est manquant, le jeton est invalide ou l'utilisateur n'est pas connecté.
+    if (!context.auth) {
+        // Renvoie une erreur standard Firebase qui sera attrapée par le client
+        throw new HttpsError('unauthenticated', 'L\'utilisateur doit être connecté pour effectuer cette action.');
+    }
+
+    const buyerId = context.auth.uid; // Utilise l'UID validé par Firebase
+    const { listingId, sellerId, orderData } = data; // Récupère les données du client
+
+    // Log des IDs reçus
+    console.log(`[CF_DEBUG] IDs reçus:`, {
+        listingId: `${listingId} (type: ${typeof listingId})`,
+        sellerId: `${sellerId} (type: ${typeof sellerId})`,
+        buyerId: `${buyerId} (type: ${typeof buyerId})`,
+        hasOrderData: !!orderData
+    });
+
+    // Vérification des données requises
+    if (!listingId || !sellerId || !orderData) {
+        console.log('[CF_DEBUG] Données manquantes:', { 
+            hasListingId: !!listingId, 
+            hasSellerId: !!sellerId, 
+            hasOrderData: !!orderData 
+        });
+        throw new HttpsError('invalid-argument', 'Les données de commande sont incomplètes.');
+    }
+
+    // ⚠️ Première vérification critique : l'ID validé correspond-il à l'acheteur ? (Sécurité)
+    if (buyerId !== orderData.buyerId) {
+        console.log('[CF_DEBUG] Incohérence des IDs:', {
+            buyerIdFromToken: buyerId,
+            buyerIdFromOrder: orderData.buyerId
+        });
+        throw new HttpsError('permission-denied', 'L\'ID de l\'utilisateur authentifié ne correspond pas à l\'ID de l\'acheteur.');
+    }
     
-    // 1. Récupérer les données du ticket
-    const snap = event.data;
-    if (!snap) {
-      logger.warn("Aucune donnée trouvée dans l'événement, annulation.");
-      return;
-    }
-    const ticketData = snap.data();
-
-    // 2. Préparer l'e-mail
-    const msg = {
-      to: "devmobflutterflow@gmail.com", // TON ADRESSE DE SUPPORT
-      from: "noreply@bricapattes.com", // Une adresse vérifiée sur SendGrid
-      replyTo: ticketData.userEmail,
-      subject: `[Nouveau Ticket Support] - ${ticketData.subject}`,
-      
-      html: `
-        <p><strong>De:</strong> ${ticketData.userEmail} (UID: ${ticketData.userId})</p>
-        <p><strong>Sujet:</strong> ${ticketData.subject}</p>
-        <hr>
-        <p><strong>Message:</strong></p>
-        <p>${ticketData.message}</p>
-        <hr>
-        <p><strong>Pièce jointe:</strong> ${ticketData.attachmentUrl || "Aucune"}</p>
-      `,
-    };
-
-    // 3. Envoyer l'e-mail
     try {
-      logger.info(`Envoi de l'e-mail pour le ticket: ${event.params.ticketId}`);
-      await sgMail.send(msg);
-      logger.info("E-mail envoyé avec succès !");
+      // Log avant la transaction
+        console.log(`[CF_DEBUG] Début de la transaction pour le listing: ${listingId}`);
+        // --- LOGIQUE DE TRANSACTION FIRESTORE ---
+        await db.runTransaction(async (transaction) => {
+            const listingRef = db.doc(`listings/${listingId}`);
+            const listingSnapshot = await transaction.get(listingRef);
+
+            if (!listingSnapshot.exists) {
+                console.error(`Listing non trouvé pour l'ID: ${listingId}`);
+                throw new HttpsError('not-found', "L'annonce est introuvable ou a été supprimée.");
+            }
+
+            const listing = listingSnapshot.data();
+            if (listing.isSold || listing.status === 'sold') {
+                throw new HttpsError('unavailable', 'Cette annonce a déjà été vendue ou n\'est plus disponible.');
+            }
+
+            // Créer la commande
+            const newOrderRef = db.collection('orders').doc();
+            const newOrder = {
+                ...orderData,
+                buyerId: buyerId, // Utilise l'ID validé
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+            transaction.set(newOrderRef, newOrder);
+
+            // Marquer l'annonce comme vendue
+            transaction.update(listingRef, {
+                isSold: true,
+                soldTo: buyerId,
+                status: 'reserved', // Ou 'sold', selon votre workflow
+                soldAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            // Retourne l'ID de la commande au client
+            return { success: true, orderId: newOrderRef.id };
+        });
+        
+        // Le résultat de la transaction est automatiquement renvoyé
+
     } catch (error) {
-      logger.error("Erreur lors de l'envoi de l'e-mail:", error);
+        // Log de l'erreur interne
+        console.error('Erreur transactionnelle processOrder:', error.code || error.message);
+        
+        // Renvoyer l'erreur au client pour affichage
+        if (error.code) {
+             throw error; // Renvoie l'erreur HttpsError
+        } else {
+             // Si c'est une erreur générique, la renvoyer comme une erreur interne
+             throw new HttpsError('internal', 'Erreur serveur inconnue.', error.message);
+        }
     }
-  }
-);
+});

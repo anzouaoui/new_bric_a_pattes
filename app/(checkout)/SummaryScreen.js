@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { db } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 
 // Composant réutilisable pour afficher une ligne de détail
 const DetailRow = ({ label, value, isLast = false }) => (
@@ -30,6 +30,10 @@ export default function SummaryScreen() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
+        // Juste avant la requête Firestore
+        console.log('Tentative de récupération du listing:', listingId);
+        const listingDoc = await getDoc(doc(db, 'listings', listingId));
+        console.log('listingDoc.exists():', listingDoc.exists());
         const docRef = doc(db, 'listings', listingId);
         const docSnap = await getDoc(docRef);
         
@@ -62,8 +66,18 @@ export default function SummaryScreen() {
   }, [listingId]);
 
   const handlePayment = () => {
+    // Ajoutez ces logs au début de la fonction
+    console.log('=== DEBUG PAYMENT ===');
+    console.log('listingId:', listingId);
+    console.log('total:', orderSummary.total);
+    console.log('auth.currentUser:', auth.currentUser?.uid);
+
     if (!listing) return;
     
+    console.log('Navigation vers ShippingAddress avec:', {
+      listingId: listing.id,
+      total: orderSummary.total.toString()
+    });
     // Rediriger vers l'écran de livraison avec les informations nécessaires
     router.push({
       pathname: '/(checkout)/ShippingAddressScreen',

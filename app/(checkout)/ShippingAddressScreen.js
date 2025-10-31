@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  collection,
   doc,
   getDoc,
-  updateDoc,
-  writeBatch
+  updateDoc
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,7 +18,216 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { auth, db } from '../../firebaseConfig';
+import { auth, db, functions } from '../../firebaseConfig';
+
+const styles = StyleSheet.create({
+  unavailableContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  warningIcon: {
+    marginBottom: 20,
+  },
+  unavailableTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  unavailableText: {
+    fontSize: 16,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 6,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#111827',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  checked: {
+    backgroundColor: '#34D399',
+    borderColor: '#34D399',
+  },
+  checkboxLabel: {
+    color: '#4B5563',
+    fontSize: 14,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EFEFEF',
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    color: '#111827',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  pickupInfo: {
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  pickupIcon: {
+    marginBottom: 12,
+  },
+  pickupTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  pickupAddress: {
+    fontSize: 16,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  pickupHours: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#EFEFEF',
+    backgroundColor: 'white',
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  primaryButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  disabledButton: {
+    backgroundColor: '#A7A7A7',
+  },
+  primaryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deliveryMethodContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 24,
+  },
+  deliveryMethodButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  deliveryMethodButtonActive: {
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  deliveryMethodText: {
+    marginLeft: 8,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  deliveryMethodTextActive: {
+    color: '#34D399',
+    fontWeight: '600',
+  },
+});
 
 // Composant réutilisable pour les champs de formulaire
 const FormField = ({ label, value, onChangeText, placeholder, keyboardType = 'default', style }) => (
@@ -63,6 +271,7 @@ export default function ShippingAddressScreen() {
   const [country, setCountry] = useState('France');
   const [saveAddress, setSaveAddress] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Charger l'adresse enregistrée de l'utilisateur
@@ -119,25 +328,36 @@ export default function ShippingAddressScreen() {
     }
   };
 
-  // Gérer le paiement
-  const handlePay = async () => {
-    // Validation des champs obligatoires
+  // Valider l'adresse de livraison
+  const validateAddress = () => {
     if (deliveryMethod === 'domicile' && (!firstName || !lastName || !addressLine1 || !postalCode || !city)) {
       Alert.alert('Champs manquants', 'Veuillez remplir tous les champs obligatoires');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  // Gérer la confirmation de la commande
+  const handleConfirmOrder = async () => {
+    // Validation de l'adresse
+    if (!validateAddress()) return;
 
     if (!auth.currentUser) {
-      Alert.alert('Non connecté', 'Veuvez-vous connecter pour effectuer un achat');
+      Alert.alert('Non connecté', 'Veuillez vous connecter pour effectuer un achat');
       return;
     }
 
-    setPaymentLoading(true);
+    setIsProcessing(true);
 
     try {
+      // ⚠️ ÉTAPE CRITIQUE : RAFRAÎCHIR LE JETON D'AUTHENTIFICATION
+      // Ceci garantit que la Cloud Function reçoit un jeton valide.
+      await auth.currentUser.getIdToken(true); // 'true' force le rafraîchissement
+      
       // 1. Sauvegarder l'adresse si demandé
       if (saveAddress) {
-        await saveUserAddress();
+        // Assurez-vous que cette fonction n'interfère pas avec l'authentification
+        await saveUserAddress(); 
       }
 
       // 2. Récupérer les détails de l'annonce
@@ -147,22 +367,24 @@ export default function ShippingAddressScreen() {
       }
       const listingData = listingDoc.data();
 
-      // 3. Vérifier si l'annonce est toujours disponible
+      // 3. Vérifier si l'annonce est toujours disponible (double vérification)
       if (listingData.status === 'sold' || listingData.status === 'reserved') {
+        setListingUnavailable(true);
         throw new Error("Désolé, cette annonce n'est plus disponible");
       }
 
-      // 4. Créer l'objet de commande
+      // 4. Préparer les données de la commande
       const orderData = {
         listingId,
         sellerId: listingData.userId,
         buyerId: auth.currentUser.uid,
-        buyerName: auth.currentUser.displayName || auth.currentUser.email,
-        listingTitle: listingData.title,
-        listingPrice: listingData.price,
-        listingImage: listingData.imageUrls?.[0] || null,
-        amount: parseFloat(total),
-        status: 'pending_payment',
+        buyerName: auth.currentUser.displayName || `${firstName} ${lastName}`.trim(),
+        sellerName: listingData.sellerName,
+        itemTitle: listingData.title,
+        itemPrice: listingData.price,
+        itemImage: listingData.images?.[0] || listingData.imageUrls?.[0] || null,
+        total: parseFloat(total),
+        status: 'pending',
         paymentStatus: 'pending',
         deliveryMethod,
         shippingAddress: deliveryMethod === 'domicile' ? {
@@ -181,91 +403,105 @@ export default function ShippingAddressScreen() {
         updatedAt: new Date().toISOString()
       };
 
-      // 5. Démarrer une transaction batch pour des opérations atomiques
-      const batch = writeBatch(db);
-      
-      // 6. Référence du document de commande
-      const orderRef = doc(collection(db, 'orders'));
-      
-      // 7. Ajouter la commande au batch
-      batch.set(orderRef, orderData);
-      
-      // 8. Mettre à jour le statut de l'annonce
-      batch.update(doc(db, 'listings', listingId), {
-        status: 'reserved',
-        reservedAt: new Date().toISOString(),
-        reservedBy: auth.currentUser.uid,
-        orderId: orderRef.id,
-        updatedAt: new Date().toISOString()
-      });
-      
-      // 9. Exécuter la transaction
-      await batch.commit();
+      // 5. Appeler la Cloud Function pour traiter la commande (le jeton frais est maintenant envoyé)
+      const processOrder = httpsCallable(functions, 'processOrder');
+      const result = await processOrder(orderData);
 
-      // 10. Simuler le processus de paiement (à remplacer par votre logique de paiement)
-      try {
-        // Ici, vous intégrerez votre solution de paiement (Stripe, PayPal, etc.)
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Mise à jour du statut après paiement réussi
-        await updateDoc(orderRef, {
-          status: 'paid',
-          paymentStatus: 'completed',
-          paidAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+      if (result.data.success) {
+        // Rediriger vers l'écran de succès avec l'ID de la commande
+        router.push({
+          pathname: '/(checkout)/PaymentSuccessScreen',
+          params: { orderId: result.data.orderId }
         });
-        
-        // Mettre à jour le statut de l'annonce
-        await updateDoc(doc(db, 'listings', listingId), {
-          status: 'sold',
-          soldAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-        
-        console.log('Paiement réussi, commande créée:', orderRef.id);
-        
-        // Rediriger vers l'écran de succès avec l'ID de commande
-        router.replace(`/(checkout)/PaymentSuccessScreen?orderId=${orderRef.id}`);
-        
-      } catch (paymentError) {
-        console.error('Erreur lors du paiement:', paymentError);
-        
-        // En cas d'échec du paiement, mettre à jour le statut
-        await updateDoc(orderRef, {
-          status: 'payment_failed',
-          paymentStatus: 'failed',
-          updatedAt: new Date().toISOString(),
-          error: paymentError.message
-        });
-        
-        // Libérer la réservation de l'annonce
-        await updateDoc(doc(db, 'listings', listingId), {
-          status: 'available',
-          reservedAt: null,
-          reservedBy: null,
-          orderId: null,
-          updatedAt: new Date().toISOString()
-        });
-        
-        throw new Error('Le paiement a échoué. Veuillez réessayer ou utiliser un autre moyen de paiement.');
+      } else {
+        throw new Error(result.data.error || 'Erreur lors du traitement de la commande');
       }
-      
     } catch (error) {
-      console.error('Erreur lors du paiement:', error);
-      Alert.alert(
-        'Erreur de paiement', 
-        error.message || 'Une erreur est survenue lors du traitement du paiement.'
-      );
+      console.error('Erreur lors du traitement de la commande:', error);
+      
+      // Gérer l'erreur spécifique 'unauthenticated'
+      if (error.code === 'unauthenticated' || (error.message && error.message.includes('Unauthenticated'))) {
+          Alert.alert(
+              'Session expirée', 
+              'Votre session a été invalidée. Veuillez vous reconnecter.', 
+              [{ text: 'OK', onPress: () => router.push('/(auth)/login') }]
+          );
+      } else if (error.message && error.message.includes('not-found')) {
+        Alert.alert('Annonce introuvable', "L'annonce n'existe plus ou n'est plus disponible");
+      } else if (error.message && error.message.includes('permission')) {
+        Alert.alert('Permission refusée', 'Vous n\'êtes pas autorisé à effectuer cette action');
+      } else {
+        Alert.alert('Erreur', error.message || 'Une erreur est survenue lors du traitement de votre commande');
+      }
     } finally {
-      setPaymentLoading(false);
+      setIsProcessing(false);
     }
-  };
+  };  
+
+  // Vérifier si l'annonce est disponible
+  const [listingUnavailable, setListingUnavailable] = useState(false);
+
+  // Vérifier l'état de l'annonce au chargement
+  useEffect(() => {
+    const checkListingStatus = async () => {
+      try {
+        // 2. Récupérer les détails de l'annonce
+        console.log('Récupération du listing:', listingId);
+
+        if (!listingId) {
+          throw new Error("ID de l'annonce manquant");
+        }
+
+        const listingDoc = await getDoc(doc(db, 'listings', listingId));
+
+        if (!listingDoc.exists()) {
+          console.error('Listing non trouvé:', listingId);
+          throw new Error("L'annonce n'existe plus ou a été supprimée");
+        }
+
+        const listingData = listingDoc.data();
+        console.log('Listing trouvé:', listingData);
+
+        if (listingDoc.exists()) {
+          const listingData = listingDoc.data();
+          if (listingData.status === 'sold' || listingData.status === 'reserved') {
+            setListingUnavailable(true);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification de l\'annonce:', error);
+      }
+    };
+
+    checkListingStatus();
+  }, [listingId]);
 
   // Afficher un indicateur de chargement pendant le chargement initial
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#34D399" />
+      </View>
+    );
+  }
+
+  // Afficher un message si l'annonce n'est plus disponible
+  if (listingUnavailable) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.unavailableContainer}>
+          <Ionicons name="warning" size={48} color="#EF4444" style={styles.warningIcon} />
+          <Text style={styles.unavailableTitle}>Annonce non disponible</Text>
+          <Text style={styles.unavailableText}>
+            Désolé, cette annonce n'est plus disponible à la vente.
+          </Text>
+          <TouchableOpacity 
+            style={[styles.primaryButton, { marginTop: 20 }]} 
+            onPress={() => router.back()}
+          >
+            <Text style={styles.primaryButtonText}>Retour aux annonces</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -418,204 +654,17 @@ export default function ShippingAddressScreen() {
           <Text style={styles.totalAmount}>{parseFloat(total).toFixed(2)} €</Text>
         </View>
         <TouchableOpacity
-          style={[styles.payButton, (paymentLoading || loading) && styles.payButtonDisabled]}
-          onPress={handlePay}
-          disabled={paymentLoading || loading}
+          style={[styles.primaryButton, isProcessing && styles.disabledButton]}
+          onPress={handleConfirmOrder}
+          disabled={isProcessing}
         >
-          {paymentLoading ? (
-            <ActivityIndicator color="white" />
+          {isProcessing ? (
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.payButtonText}>
-              Payer {parseFloat(total).toFixed(2)} €
-            </Text>
+            <Text style={styles.primaryButtonText}>Confirmer la commande</Text>
           )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 100, // Pour éviter que le contenu ne soit caché par le footer
-  },
-  deliveryMethodContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-  },
-  deliveryMethodButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  deliveryMethodButtonActive: {
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  deliveryMethodText: {
-    marginLeft: 8,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  deliveryMethodTextActive: {
-    color: '#34D399',
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: '#111827',
-  },
-  formGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    color: '#4B5563',
-    marginBottom: 6,
-    fontWeight: '500',
-  },
-  input: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#111827',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  checked: {
-    backgroundColor: '#34D399',
-    borderColor: '#34D399',
-  },
-  checkboxLabel: {
-    color: '#4B5563',
-    fontSize: 14,
-  },
-  pickupInfo: {
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  pickupIcon: {
-    marginBottom: 12,
-  },
-  pickupTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  pickupAddress: {
-    fontSize: 16,
-    color: '#4B5563',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 12,
-  },
-  pickupHours: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#EFEFEF',
-    backgroundColor: 'white',
-  },
-  totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  totalAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  payButton: {
-    backgroundColor: '#34D399',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  payButtonDisabled: {
-    opacity: 0.7,
-  },
-  payButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
