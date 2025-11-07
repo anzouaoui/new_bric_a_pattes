@@ -2,15 +2,13 @@ import { Stack } from 'expo-router';
 
 export default function CheckoutModalLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="summary" // C'est notre Ecran 30
-        options={{ 
-          headerShown: false, 
-          presentation: 'modal',
-        }}
-      />
-      {/* (On ajoutera l'écran de succès ici plus tard) */}
+    <Stack screenOptions={{
+      headerShown: false, // Désactive le header pour tous les écrans du groupe
+      presentation: 'modal',
+    }}>
+      <Stack.Screen name="SummaryScreen" />
+      <Stack.Screen name="ShippingAddressScreen" />
+      <Stack.Screen name="PaymentSuccessScreen" />
     </Stack>
   );
 }

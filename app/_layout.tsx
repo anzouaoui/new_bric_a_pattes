@@ -65,17 +65,23 @@ export default function RootLayout() {
     <CustomThemeProvider>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
-      {/**
-       * CHANGEMENT PRINCIPAL : 
-       * Il n'y a PLUS de condition '!user' ici.
-       * Le Stack déclare TOUTES les routes, TOUT LE TEMPS.
-       */}
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerShown: false, // Désactive les headers par défaut pour tous les écrans
+        }}
+      >
         {/* Groupe 1: Auth */}
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" />
         
         {/* Groupe 2: Tabs */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="(tabs)" 
+          options={{
+            headerShown: false,
+            // Désactive l'animation de transition pour éviter les problèmes de rendu
+            animation: 'default',
+          }}
+        />
         
         {/* Groupe 3: Sell Modal */}
         <Stack.Screen 
@@ -84,6 +90,25 @@ export default function RootLayout() {
             headerShown: false,
             presentation: 'modal',
             animation: 'slide_from_bottom'
+          }}
+        />
+        
+        {/* Groupe 4: Checkout */}
+        <Stack.Screen 
+          name="(checkout)" 
+          options={{ 
+            headerShown: false,
+            presentation: 'modal'
+          }}
+        />
+        
+        {/* Configuration spécifique pour le profil */}
+        <Stack.Screen 
+          name="profile"
+          options={{
+            headerShown: false,
+            // Désactive l'animation de transition pour éviter les problèmes de rendu
+            animation: 'default',
           }}
         />
       </Stack>
