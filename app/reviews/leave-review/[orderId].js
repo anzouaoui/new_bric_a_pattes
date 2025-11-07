@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { auth, db } from '../../../firebaseConfig';
 
 const StarRating = ({ rating, onRatingChange }) => {
@@ -26,57 +26,82 @@ export default function LeaveReviewScreen() {
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [order, setOrder] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [isBuyer, setIsBuyer] = useState(false);
-  const [targetUser, setTargetUser] = useState({ id: null, name: '' });
+  const [seller, setSeller] = useState({ id: null, name: 'le vendeur' });
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
+    const fetchOrderAndSellerDetails = async () => {
       try {
+        // Vérifier que l'utilisateur est connecté
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          setError('Vous devez être connecté pour laisser un avis');
+          setLoading(false);
+          return;
+        }
+
         const orderRef = doc(db, 'orders', orderId);
         const orderDoc = await getDoc(orderRef);
         
-        if (orderDoc.exists()) {
-          const orderData = { id: orderDoc.id, ...orderDoc.data() };
-          setOrder(orderData);
-          
-          // Déterminer si l'utilisateur actuel est l'acheteur ou le vendeur
-          const currentUserId = auth.currentUser?.uid;
-          const isUserBuyer = currentUserId === orderData.buyerId;
-          setIsBuyer(isUserBuyer);
-          
-          // Définir la cible de l'avis
-          setTargetUser({
-            id: isUserBuyer ? orderData.sellerId : orderData.buyerId,
-            name: isUserBuyer ? orderData.sellerName : orderData.buyerName
-          });
-        } else {
+        if (!orderDoc.exists()) {
           setError('Commande non trouvée');
+          setLoading(false);
+          return;
         }
+
+        const orderData = { id: orderDoc.id, ...orderDoc.data() };
+        setOrder(orderData);
+
+        // Vérifier que l'utilisateur est bien l'acheteur
+        if (currentUser.uid !== orderData.buyerId) {
+          setError('Seul l\'acheteur peut laisser un avis pour cette commande');
+          setLoading(false);
+          return;
+        }
+
+        // Vérifier que l'acheteur n'a pas déjà laissé d'avis
+        if (orderData.buyerReviewLeft) {
+          setError('Vous avez déjà laissé un avis pour cette commande');
+          setLoading(false);
+          return;
+        }
+
+        // Récupérer les informations du vendeur
+        const sellerRef = doc(db, 'users', orderData.sellerId);
+        const sellerDoc = await getDoc(sellerRef);
+        
+        if (sellerDoc.exists()) {
+          setSeller({
+            id: orderData.sellerId,
+            name: sellerDoc.data().displayName || 'le vendeur'
+          });
+        }
+
       } catch (err) {
-        console.error('Erreur lors de la récupération de la commande:', err);
-        setError('Erreur lors du chargement des détails de la commande');
+        console.error('Erreur lors de la récupération des détails:', err);
+        setError('Une erreur est survenue lors du chargement des informations');
       } finally {
         setLoading(false);
       }
     };
 
     if (orderId) {
-      fetchOrderDetails();
+      fetchOrderAndSellerDetails();
     }
   }, [orderId]);
 
   const handleSubmitReview = async () => {
     if (!rating) {
-      setError('Veuillez attribuer une note');
+      Alert.alert('Erreur', 'Veuillez attribuer une note');
       return;
     }
-    if (!comment.trim()) {
-      setError('Veuillez écrire un commentaire');
+    
+    if (comment.trim().length < 10) {
+      Alert.alert('Erreur', 'Votre commentaire doit contenir au moins 10 caractères');
       return;
     }
 
@@ -84,37 +109,90 @@ export default function LeaveReviewScreen() {
     setError('');
 
     try {
-      const currentUserId = auth.currentUser.uid;
-      const reviewData = {
-        orderId,
-        sourceId: currentUserId, // Celui qui laisse l'avis
-        targetId: targetUser.id, // Celui qui est évalué
-        rating,
-        comment: comment.trim(),
-        createdAt: serverTimestamp(),
-        role: isBuyer ? 'buyer' : 'seller',
-        itemTitle: order?.itemTitle,
-        targetName: targetUser.name,
-        orderDate: order?.createdAt
-      };
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error('Utilisateur non connecté');
+      }
 
-      // Créer un nouvel avis
-      const reviewRef = doc(collection(db, 'reviews'));
-      await setDoc(reviewRef, reviewData);
+      // Utilisation d'une transaction pour garantir l'intégrité des données
+      await runTransaction(db, async (transaction) => {
+        // Vérifier que l'utilisateur n'a pas déjà laissé d'avis
+        const orderRef = doc(db, 'orders', orderId);
+        const orderDoc = await transaction.get(orderRef);
+        
+        if (!orderDoc.exists()) {
+          throw new Error('Commande non trouvée');
+        }
+        
+        const orderData = orderDoc.data();
+        
+        if (orderData.buyerId !== currentUser.uid) {
+          throw new Error('Non autorisé');
+        }
+        
+        if (orderData.buyerReviewLeft) {
+          throw new Error('Vous avez déjà laissé un avis pour cette commande');
+        }
 
-      // Mettre à jour la commande pour indiquer que l'avis a été laissé
-      const orderRef = doc(db, 'orders', orderId);
-      const updateData = isBuyer 
-        ? { buyerReviewLeft: true }
-        : { sellerReviewLeft: true };
-      
-      await setDoc(orderRef, updateData, { merge: true });
+        // Créer un nouvel avis
+        const reviewData = {
+          orderId,
+          sourceId: currentUser.uid, // L'acheteur qui laisse l'avis
+          targetId: seller.id,       // Le vendeur évalué
+          role: 'buyer_reviewing_seller',
+          rating,
+          comment: comment.trim(),
+          createdAt: serverTimestamp(),
+          itemTitle: order?.listingTitle || 'Produit sans nom',
+          targetName: seller.name,
+          orderDate: order?.createdAt || serverTimestamp()
+        };
 
-      // Rediriger vers l'écran précédent ou l'écran des commandes
-      router.back();
+        // Ajouter l'avis à la collection des avis
+        const reviewRef = doc(collection(db, 'reviews'));
+        transaction.set(reviewRef, reviewData);
+
+        // Mettre à jour la commande pour indiquer que l'acheteur a laissé un avis
+        transaction.update(orderRef, {
+          buyerReviewLeft: true,
+          updatedAt: serverTimestamp()
+        });
+
+        // Mettre à jour la note moyenne du vendeur
+        const sellerRef = doc(db, 'users', seller.id);
+        const sellerDoc = await transaction.get(sellerRef);
+        
+        if (sellerDoc.exists()) {
+          const sellerData = sellerDoc.data();
+          const currentRating = sellerData.rating || 0;
+          const reviewCount = sellerData.reviewCount || 0;
+          
+          const newReviewCount = reviewCount + 1;
+          const newRating = ((currentRating * reviewCount) + rating) / newReviewCount;
+          
+          transaction.update(sellerRef, {
+            rating: parseFloat(newRating.toFixed(1)),
+            reviewCount: newReviewCount,
+            updatedAt: serverTimestamp()
+          });
+        }
+      });
+
+      // Afficher un message de succès et rediriger
+      Alert.alert(
+        'Merci !', 
+        'Votre avis a été enregistré avec succès.',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => router.back() 
+          }
+        ]
+      );
     } catch (err) {
       console.error('Erreur lors de la soumission de l\'avis:', err);
-      setError('Une erreur est survenue lors de la soumission de votre avis');
+      setError(err.message || 'Une erreur est survenue lors de la soumission de votre avis');
+      Alert.alert('Erreur', err.message || 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setSubmitting(false);
     }
@@ -146,15 +224,12 @@ export default function LeaveReviewScreen() {
       />
 
       <View style={styles.content}>
-        <Text style={styles.title}>
-          {isBuyer ? 'Évaluer le vendeur' : 'Évaluer l\'acheteur'}
-          {targetUser.name && ` ${targetUser.name}`}
+        <Text style={styles.subtitle}>
+          Partagez votre expérience avec {seller.name}
         </Text>
         
         <Text style={styles.subtitle}>
-          {isBuyer 
-            ? 'Votre avis aidera les autres acheteurs' 
-            : 'Votre avis aidera les autres vendeurs'}
+          Votre avis aidera les autres acheteurs
         </Text>
         
         {order && (

@@ -7,6 +7,20 @@ import { auth, db } from '../../firebaseConfig';
 
 // Composant pour afficher une ligne de commande
 const OrderRow = ({ item, onPress }) => {
+  const router = useRouter();
+  
+  const handleReviewPress = (e) => {
+    e.stopPropagation(); // Empêcher la navigation vers les détails de la commande
+    router.push({
+      pathname: '/reviews/leave-review/[orderId]',
+      params: { 
+        orderId: item.id,
+        sellerId: item.sellerId,
+        listingId: item.listingId,
+        listingTitle: item.listingTitle
+      }
+    });
+  };
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Date inconnue';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -61,6 +75,17 @@ const OrderRow = ({ item, onPress }) => {
         <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
           <Text style={styles.statusText}>{formatStatus(item.status)}</Text>
         </View>
+        
+        {/* Bouton d'évaluation */}
+        {(item.status === 'delivered' || item.status === 'completed') && 
+         !item.buyerReviewLeft && (
+          <TouchableOpacity 
+            style={styles.reviewButton}
+            onPress={handleReviewPress}
+          >
+            <Text style={styles.reviewButtonText}>Évaluer le vendeur</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
     </TouchableOpacity>
@@ -309,19 +334,6 @@ const styles = StyleSheet.create({
   statusBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginTop: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  statusPending: {
-    backgroundColor: '#FEF3C7',
-  },
-  statusShipped: {
-    backgroundColor: '#DBEAFE',
   },
   statusDelivered: {
     backgroundColor: '#D1FAE5',

@@ -120,7 +120,7 @@ export default function PaymentSuccessScreen() {
         {/* Bouton Voir mes commandes */}
         <TouchableOpacity 
           style={styles.primaryButton}
-          onPress={() => router.replace('/(tabs)/profile/MyOrdersScreen')}
+          onPress={() => router.replace('/MyOrdersScreen')}
         >
           <Text style={styles.primaryButtonText}>Voir mes commandes</Text>
         </TouchableOpacity>

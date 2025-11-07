@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ListingCard from '../../components/ListingCard';
 import { auth, db } from '../../firebaseConfig';
+import useReviews from '../../hooks/useReviews';
 
 const ProfileScreen = () => {
   const router = useRouter();
@@ -12,9 +13,11 @@ const ProfileScreen = () => {
   
   const [userProfile, setUserProfile] = useState(null);
   const [userListings, setUserListings] = useState([]);
-  const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
+  
+  // Utiliser le hook useReviews pour récupérer les avis du vendeur
+  const { averageRating, totalReviews, loading: reviewsLoading } = useReviews(profileId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,11 +42,7 @@ const ProfileScreen = () => {
         }));
         setUserListings(listings);
 
-        // TODO: Fetch user reviews (placeholder for now)
-        setUserReviews([
-          { id: '1', rating: 5, comment: 'Excellent vendeur !', userName: 'Jean D.', date: '2023-10-20' },
-          { id: '2', rating: 4, comment: 'Produit comme décrit, merci !', userName: 'Marie L.', date: '2023-09-15' },
-        ]);
+        // Les avis sont maintenant gérés par le hook useReviews
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -179,9 +178,31 @@ const ProfileScreen = () => {
             )}
             <View style={styles.onlineBadge} />
           </View>
-          
-          <Text style={styles.userName}>{userProfile.displayName || 'Utilisateur'}</Text>
-          <Text style={styles.location}>📍 Paris, France</Text>
+          <View style={styles.profileHeader}>
+            <Text style={styles.profileName}>{userProfile?.displayName || 'Utilisateur'}</Text>
+            
+            {!reviewsLoading && totalReviews > 0 && (
+              <View style={styles.ratingContainer}>
+                <View style={styles.ratingStars}>
+                  <Ionicons name="star" size={16} color="#F59E0B" />
+                  <Text style={styles.ratingText}>
+                    {averageRating.toFixed(1)}
+                    <Text style={styles.reviewCount}> • {totalReviews} {totalReviews > 1 ? 'avis' : 'avis'}</Text>
+                  </Text>
+                </View>
+              </View>
+            )}
+            
+            {(reviewsLoading || totalReviews === 0) && (
+              <Text style={styles.noReviewsText}>
+                {reviewsLoading ? 'Chargement...' : 'Aucun avis pour le moment'}
+              </Text>
+            )}
+          </View>
+          <Text style={styles.profileLocation}>
+            <Ionicons name="location-outline" size={14} color="#6B7280" />
+            {userProfile?.location || 'Non spécifié'}
+          </Text>
           <Text style={styles.memberSince}>
             Membre depuis {userProfile.createdAt?.toDate?.().toLocaleDateString('fr-FR') || 'quelque temps'}
           </Text>
@@ -361,22 +382,50 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
-  userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 8,
-    textAlign: 'center',
+  profileName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111827',
   },
-  location: {
+  profileLocation: {
     fontSize: 14,
     color: '#6B7280',
+    marginBottom: 16,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  ratingStars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  reviewCount: {
+    color: '#6B7280',
+    fontWeight: '400',
+  },
+  noReviewsText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontStyle: 'italic',
     marginTop: 4,
   },
   memberSince: {
     fontSize: 12,
     color: '#9CA3AF',
-    marginTop: 4,
+  },
+  profileHeader: {
+    flexDirection: 'column',
+    marginBottom: 8,
+    width: '100%',
   },
   actionButtons: {
     flexDirection: 'row',
