@@ -71,11 +71,10 @@ const ListingCard = ({ item, onPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 200,
+    flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     overflow: 'hidden',
-    marginRight: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -84,6 +83,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    margin: 4,
   },
   imageContainer: {
     position: 'relative',

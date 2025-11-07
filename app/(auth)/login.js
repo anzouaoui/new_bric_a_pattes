@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView,
-  Pressable,
-  ActivityIndicator
-} from 'react-native';
-import { MaterialCommunityIcons, Feather, AntDesign, FontAwesome } from '@expo/vector-icons';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
+import { AntDesign, Feather, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from '../../firebaseConfig';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
