@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  StyleSheet, 
-  ActivityIndicator,
-  TouchableOpacity
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../../firebaseConfig';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import PrivacyRow from '../../components/PrivacyRow';
+import { auth, db } from '../../firebaseConfig';
 
 export default function PrivacyPreferences() {
   const router = useRouter();
@@ -101,7 +101,7 @@ export default function PrivacyPreferences() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </SafeAreaView>
     );
   }

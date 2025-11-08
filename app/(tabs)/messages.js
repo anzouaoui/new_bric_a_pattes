@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  FlatList, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image,
-  ActivityIndicator
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { db } from '../../firebaseConfig';
 
 const ConversationRow = ({ item }) => {
   const router = useRouter();
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#c59f77',
     marginTop: 4,
   },
   separator: {

@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  SafeAreaView, 
-  ScrollView, 
-  Alert,
-  ActivityIndicator
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { auth, db } from '../../firebaseConfig';
 
 // Composant pour afficher une étape de la timeline
@@ -22,7 +22,7 @@ const TimelineStep = ({ icon, title, date, isActive, isLast }) => (
       <Ionicons 
         name={icon} 
         size={20} 
-        color={isActive ? '#10B981' : '#9CA3AF'} 
+        color={isActive ? '#95ba72' : '#9CA3AF'} 
       />
     </View>
     <View style={styles.timelineContent}>
@@ -116,7 +116,7 @@ export default function OrderTrackingScreen() {
   if (loading || !order) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#95ba72',
     marginBottom: 12,
   },
   articleImage: {
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   primaryButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -460,11 +460,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   activeText: {
-    color: '#10B981',
+    color: '#95ba72',
     fontWeight: '600',
   },
   activeLine: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
   },
   infoText: {
     fontSize: 14,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   // Bouton principal (confirmer la réception)
   confirmButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

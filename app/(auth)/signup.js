@@ -1,21 +1,21 @@
 import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import * as ImagePicker from 'expo-image-picker';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Image,
-  ActivityIndicator
+  View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth, db } from '../../firebaseConfig';
 
 const SignUpScreen = () => {
@@ -321,7 +321,7 @@ const SignUpScreen = () => {
       >
         <Text style={styles.loginText}>
           <Text style={{color: 'grey'}}>Déjà membre ? </Text>
-          <Text style={{color: '#34D399', fontWeight: 'bold'}}>Connectez-vous</Text>
+          <Text style={{color: '#c59f77', fontWeight: 'bold'}}>Connectez-vous</Text>
         </Text>
       </Pressable>
       </ScrollView>
@@ -443,11 +443,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   legalLink: {
-    color: '#34D399',
+    color: '#c59f77',
     fontWeight: 'bold',
   },
   signUpButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 18,
     borderRadius: 12,
     width: '100%',

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const LANGUAGES = [
   { code: 'fr', name: 'Français' },
@@ -151,7 +151,7 @@ const styles = {
     backgroundColor: '#FFF',
   },
   languageItemSelected: {
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     backgroundColor: '#F0FDF4',
   },
   languageName: {
@@ -164,7 +164,7 @@ const styles = {
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -172,7 +172,7 @@ const styles = {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
   },
   footer: {
     padding: 24,
@@ -181,7 +181,7 @@ const styles = {
     backgroundColor: '#FFF',
   },
   saveButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

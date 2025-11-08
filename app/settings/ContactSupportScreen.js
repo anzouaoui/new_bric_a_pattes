@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  SafeAreaView, 
-  ScrollView, 
-  ActivityIndicator, 
-  Alert,
-  StyleSheet 
-} from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import { useRouter } from 'expo-router';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { auth, db, storage } from '../../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function ContactSupportScreen() {
   const router = useRouter();
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   attachButtonText: {
-    color: '#10B981',
+    color: '#95ba72',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
   },
   submitButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

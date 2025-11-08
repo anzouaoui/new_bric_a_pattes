@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
-  ActivityIndicator,
-  Alert,
-  SafeAreaView 
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { auth } from '../../firebaseConfig';
-import { 
-  EmailAuthProvider, 
-  reauthenticateWithCredential, 
-  updatePassword, 
-  sendPasswordResetEmail 
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  sendPasswordResetEmail,
+  updatePassword
 } from 'firebase/auth';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import InputWithToggle from '../../components/InputWithToggle';
+import { auth } from '../../firebaseConfig';
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   button: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',

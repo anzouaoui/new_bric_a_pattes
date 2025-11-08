@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   boostOptionSelected: {
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     backgroundColor: '#F0FDF4',
   },
   boostOptionContent: {
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
   },
   footer: {
     padding: 24,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   ctaButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Données statiques pour la FAQ (à remplacer par un appel Firestore si nécessaire)
 const FAQ_DATA = [
@@ -245,7 +245,7 @@ const styles = {
     fontWeight: '500',
   },
   categoryTextSelected: {
-    color: '#059669',
+    color: '#95ba72',
   },
   sectionTitle: {
     fontSize: 20,
@@ -307,7 +307,7 @@ const styles = {
     marginBottom: 16,
   },
   contactButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,

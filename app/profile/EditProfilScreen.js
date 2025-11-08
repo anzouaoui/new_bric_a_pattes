@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  ActivityIndicator, 
-  ScrollView, 
-  StyleSheet, 
-  Alert 
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useRouter } from 'expo-router';
 import { updateProfile } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth, db } from '../../firebaseConfig';
 
 const EditProfileScreen = () => {
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#EFEFEF',
   },
   saveButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     padding: 18,
     borderRadius: 12,
     alignItems: 'center',

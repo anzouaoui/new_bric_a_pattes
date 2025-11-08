@@ -100,7 +100,7 @@ export default function AddPhotosScreen() {
           onPress={pickImage}
           disabled={images.length >= 10}
         >
-          <Feather name="plus" size={24} color="#34D399" />
+          <Feather name="plus" size={24} color="#95ba72" />
         </TouchableOpacity>
       );
     }
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 4,
   },
   description: {
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   photoCounter: {
     fontSize: 14,
-    color: '#34D399',
+    color: '#95ba72',
     fontWeight: '600',
     marginVertical: 12,
   },
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   nextButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     marginTop: 12,
   },
   disabledButton: {

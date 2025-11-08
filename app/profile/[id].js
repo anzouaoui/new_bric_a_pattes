@@ -135,7 +135,7 @@ const ProfileScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   buttonPrimary: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     marginLeft: 12,
   },
   buttonPrimaryText: {
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   seeAllText: {
-    color: '#10B981',
+    color: '#95ba72',
     fontWeight: '500',
     fontSize: 14,
   },

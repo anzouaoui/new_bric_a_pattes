@@ -1,9 +1,10 @@
-import { AntDesign, Feather, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -56,7 +57,7 @@ const LoginScreen = () => {
       >
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <MaterialCommunityIcons name="paw" size={48} color="#34D399" />
+          <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
         </View>
 
         {/* Titre */}
@@ -137,7 +138,7 @@ const LoginScreen = () => {
         >
           <Text style={styles.signupText}>
             <Text style={{color: 'grey'}}>Pas encore de compte ? </Text>
-            <Text style={{color: '#34D399', fontWeight: 'bold'}}>S'inscrire</Text>
+            <Text style={{color: '#c59f77', fontWeight: 'bold'}}>S'inscrire</Text>
           </Text>
         </Pressable>
       </ScrollView>
@@ -162,6 +163,10 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignSelf: 'center',
     marginTop: 40,
+  },
+  logo: {
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: 28,
@@ -189,7 +194,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   forgotPasswordText: {
-    color: 'grey',
+    color: '#c59f77',
     fontWeight: '600',
   },
   inputContainer: {
@@ -208,7 +213,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   loginButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72' ,
     paddingVertical: 16,
     borderRadius: 12,
     width: '100%',

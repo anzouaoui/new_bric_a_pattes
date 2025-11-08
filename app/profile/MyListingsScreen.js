@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth, db } from '../../firebaseConfig';
 
 // Sub-component for status cards
-const StatCard = ({ label, count, color = '#34D399' }) => (
+const StatCard = ({ label, count, color = '#95ba72' }) => (
   <View style={styles.statCard}>
     <Text style={styles.statCount}>{count}</Text>
     <Text style={styles.statLabel}>{label}</Text>
@@ -47,7 +47,7 @@ const MyListingRow = ({ item, onPress }) => {
       
       <View style={styles.listingInfo}>
         <View style={[styles.statusBadge, { backgroundColor: isSold ? '#F3F4F6' : '#E0F2F1' }]}>
-          <Text style={[styles.statusText, { color: isSold ? '#6B7280' : '#0D9488' }]}>
+          <Text style={[styles.statusText, { color: isSold ? '#6B7280' : '#95ba72' }]}>
             {isSold ? 'Vendu' : 'Actif'}
           </Text>
         </View>
@@ -163,7 +163,7 @@ const MyListingsScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -185,7 +185,7 @@ const MyListingsScreen = () => {
           <StatCard 
             label="Annonces Actives" 
             count={activeCount} 
-            color="#34D399" 
+            color="#95ba72" 
           />
           <StatCard 
             label="Annonces Vendues" 
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   boostedCard: {
     borderWidth: 2,
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
   },
   listingImage: {
     width: 80,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     right: 16,
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     flexDirection: 'row',
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,

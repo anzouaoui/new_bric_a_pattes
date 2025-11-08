@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../../firebaseConfig';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 const DetailRow = ({ label, value, isBold = false }) => (
   <View style={styles.detailRow}>
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   payButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

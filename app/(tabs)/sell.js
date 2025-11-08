@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { Stack, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { auth } from '../../firebaseConfig';
 
@@ -29,7 +29,7 @@ export default function SellScreen() {
           headerBackTitle: 'Retour'
         }} 
       />
-      <ActivityIndicator size="large" color="#34D399" />
+      <ActivityIndicator size="large" color="#95ba72" />
     </View>
   );
 }

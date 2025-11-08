@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ActivityIndicator,
-  Alert
-} from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from '../../firebaseConfig';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -90,7 +90,7 @@ const ForgotPasswordScreen = () => {
 
         {/* Espace flexible avec indicateur de chargement */}
         <View style={styles.spacer}>
-          {loading && <ActivityIndicator size="large" color="#34D399" />}
+          {loading && <ActivityIndicator size="large" color="#c59f77" />}
         </View>
 
         {/* Bouton d'envoi */}
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resetButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     width: '100%',

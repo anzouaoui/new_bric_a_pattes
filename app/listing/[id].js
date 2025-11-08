@@ -351,7 +351,7 @@ const ListingDetailScreen = () => {
           <Ionicons 
             name={isFavorite ? "heart" : "heart-outline"} 
             size={24} 
-            color={isFavorite ? "#EF4444" : "#34D399"} 
+            color={isFavorite ? "#EF4444" : "#95ba72"} 
           />
         </TouchableOpacity>
         
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#34D399',
+    color: '#95ba72',
   },
   description: {
     fontSize: 16,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     borderWidth: 1.5,
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     padding: 16,
     borderRadius: 12,
     justifyContent: 'center',
@@ -532,10 +532,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   contactButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#c59f77',
   },
   buyButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#95ba72',
   },
   buttonText: {
     color: '#FFFFFF',

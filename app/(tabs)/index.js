@@ -250,7 +250,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   primaryButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#c59f77',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,
@@ -501,16 +501,16 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   secondaryButtonText: {
-    color: '#34D399',
+    color: '#95ba72',
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',
   },
   fab: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 20,
     right: 20,
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     width: 60,
     height: 60,
     borderRadius: 30,

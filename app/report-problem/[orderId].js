@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  SafeAreaView, 
-  ScrollView, 
-  Image, 
-  ActivityIndicator, 
-  Alert,
-  FlatList
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { db, storage, auth } from '../../firebaseConfig';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { addDoc, collection, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { auth, db, storage } from '../../firebaseConfig';
 
 const REASONS = [
   'Article non reçu',
@@ -153,7 +153,7 @@ export default function ReportProblemScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   submitButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',

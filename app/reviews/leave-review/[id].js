@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, ScrollView, Image } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { doc, getDoc, updateDoc, arrayUnion, serverTimestamp, collection, addDoc } from 'firebase/firestore';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { addDoc, collection, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../../../firebaseConfig';
 
 const LeaveReviewScreen = () => {
@@ -127,7 +127,7 @@ const LeaveReviewScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   submitButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

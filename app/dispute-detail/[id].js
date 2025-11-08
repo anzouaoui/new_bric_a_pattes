@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ActivityIndicator, 
-  ScrollView, 
-  FlatList, 
-  Alert,
-  SafeAreaView
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth } from '../../firebaseConfig';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { auth, db } from '../../firebaseConfig';
 
 const DisputeDetail = () => {
   const [dispute, setDispute] = useState(null);
@@ -83,7 +83,7 @@ const DisputeDetail = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
   },
   secondaryButton: {
     backgroundColor: '#F3F4F6',

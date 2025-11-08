@@ -89,7 +89,7 @@ export default function AddDetailsScreen() {
               style={[
                 styles.conditionChip,
                 {
-                  borderColor: condition === item ? '#34D399' : '#E0E0E0',
+                  borderColor: condition === item ? '#95ba72' : '#E0E0E0',
                   backgroundColor: condition === item ? '#E0F2F1' : 'white',
                 },
               ]}
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     width: '33.3%',
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 4,
   },
   label: {
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   continueButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

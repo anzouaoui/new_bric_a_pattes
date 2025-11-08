@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  TextInput,
   StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
 
 const categories = [
   { id: 'transport', name: 'Transport', icon: 'truck-delivery' },
@@ -80,7 +80,7 @@ export default function FilterScreen({ navigation, route }) {
                 <MaterialCommunityIcons 
                   name={category.icon} 
                   size={16} 
-                  color={selectedCategories.includes(category.id) ? '#34D399' : '#6B7280'} 
+                  color={selectedCategories.includes(category.id) ? '#95ba72' : '#6B7280'} 
                   style={styles.categoryIcon}
                 />
                 <Text 
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   resetText: {
     fontSize: 16,
-    color: '#34D399',
+    color: '#95ba72',
     fontWeight: '600',
   },
   scrollView: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedCategoryChip: {
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     borderWidth: 2,
     backgroundColor: '#F0FDF4',
   },
@@ -249,10 +249,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   selectedTrack: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
   },
   marker: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   applyButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

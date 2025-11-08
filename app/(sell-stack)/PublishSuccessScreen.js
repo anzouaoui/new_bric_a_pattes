@@ -11,7 +11,7 @@ export default function PublishSuccessScreen() {
       <View style={styles.content}>
         {/* Cercle vert avec icône de validation */}
         <View style={styles.iconContainer}>
-          <Ionicons name="checkmark-done" size={48} color="#34D399" />
+          <Ionicons name="checkmark-done" size={48} color="#95ba72" />
         </View>
 
         {/* Titre */}
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   primaryButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     width: '100%',
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#34D399',
+    borderColor: '#c59f77',
     borderWidth: 1.5,
     paddingVertical: 16,
     borderRadius: 12,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   secondaryButtonText: {
-    color: '#34D399',
+    color: '#c59f77',
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 16,

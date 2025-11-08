@@ -4,17 +4,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { db } from '../../firebaseConfig'; // Assurez-vous que ce chemin est correct (probablement ../firebaseConfig)
 
@@ -105,7 +105,7 @@ const SaleDetail = () => {
   if (loading || !order) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -185,7 +185,7 @@ ${order.shippingAddress.country || ''}`}
             <Text style={styles.sectionTitle}>Méthode de retrait</Text>
             <View style={styles.card}>
               <View style={styles.pickupInfo}>
-                <Ionicons name="storefront-outline" size={24} color="#10B981" />
+                <Ionicons name="storefront-outline" size={24} color="#95ba72" />
                 <Text style={styles.pickupText}>Retrait sur Place</Text>
               </View>
               <Text style={styles.addressText}>
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   primaryButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

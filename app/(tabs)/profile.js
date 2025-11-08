@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   editButtonText: {
-    color: '#0D9488',
+    color: '#95ba72',
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   badgeText: {
-    color: '#065F46',
+    color: '#95ba72',
     fontSize: 12,
     fontWeight: '600',
   },

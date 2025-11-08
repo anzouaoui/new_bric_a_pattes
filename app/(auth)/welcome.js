@@ -1,9 +1,6 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const WelcomeScreen = () => {
   return (
@@ -11,8 +8,7 @@ const WelcomeScreen = () => {
       <View style={styles.content}>
         {/* Header avec logo */}
         <View style={styles.header}>
-          <MaterialCommunityIcons name="paw" size={28} color="#34D399" />
-          <Text style={styles.logoText}>Bric-a-pattes</Text>
+          <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
         </View>
 
         {/* Image principale */}
@@ -39,23 +35,6 @@ const WelcomeScreen = () => {
             <Text style={styles.secondaryButtonText}>Se connecter</Text>
           </TouchableOpacity>
         </Link>
-
-        {/* Séparateur */}
-        <View style={styles.separator}>
-          <View style={styles.separatorLine} />
-          <Text style={styles.separatorText}>Ou continuer avec</Text>
-          <View style={styles.separatorLine} />
-        </View>
-
-        {/* Boutons sociaux */}
-        <View style={styles.socialButtons}>
-          <TouchableOpacity style={styles.socialButton}>
-            <AntDesign name="google" size={28} color="#DB4437" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="facebook-f" size={28} color="#3b5998" />
-          </TouchableOpacity>
-        </View>
 
         {/* Texte légal */}
         <View style={styles.legalTextContainer}>
@@ -86,7 +65,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 30,
+    marginTop: 20,
+  },
+  logo: {
+    width: 200,
+    height: 200,
   },
   logoText: {
     fontSize: 22,
@@ -107,7 +90,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   primaryButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     width: '100%',
@@ -163,6 +146,7 @@ const styles = StyleSheet.create({
   },
   legalTextContainer: {
     marginTop: 20,
+    marginBottom: 60,
   },
   legalText: {
     fontSize: 12,

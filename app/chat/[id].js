@@ -164,7 +164,7 @@ export default function ChatScreen() {
         {/* Zone de saisie */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.plusButton}>
-            <Ionicons name="add-circle-outline" size={32} color="#34D399" />
+            <Ionicons name="add-circle-outline" size={32} color="#95ba72" />
           </TouchableOpacity>
           
           <TextInput
@@ -183,7 +183,7 @@ export default function ChatScreen() {
             <Ionicons 
               name="send" 
               size={24} 
-              color={newMessageText.trim() ? "#34D399" : "#9CA3AF"} 
+              color={newMessageText.trim() ? "#95ba72" : "#9CA3AF"} 
             />
           </TouchableOpacity>
         </View>
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   sentBubble: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderBottomRightRadius: 0,
   },
   receivedBubble: {

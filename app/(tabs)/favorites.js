@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import {
+  collection,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  query,
+  where
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { 
-  doc, 
-  getDoc, 
-  collection, 
-  query, 
-  where, 
-  documentId,
-  getDocs 
-} from 'firebase/firestore';
-import { auth, db } from '../../firebaseConfig';
 import ListingCard from '../../components/ListingCard';
+import { auth, db } from '../../firebaseConfig';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -145,7 +145,7 @@ const FavoritesScreen = () => {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#34D399" />
+          <ActivityIndicator size="large" color="#95ba72" />
         </View>
       ) : (
         <FlatList

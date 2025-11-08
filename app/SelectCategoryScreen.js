@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import {
-  View,
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  FlatList,
-  Dimensions,
+  View,
 } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
@@ -50,7 +50,7 @@ const SelectCategoryScreen = ({ navigation }) => {
       <FontAwesome5 
         name={item.icon} 
         size={20} 
-        color={selectedCategory === item.id ? '#34D399' : '#4B5563'} 
+        color={selectedCategory === item.id ? '#95ba72' : '#4B5563'} 
       />
       <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   categoryChipSelected: {
     backgroundColor: '#E0F2F1',
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     borderWidth: 2,
   },
   categoryText: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   nextButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

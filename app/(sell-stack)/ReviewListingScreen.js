@@ -23,7 +23,7 @@ import { db, storage } from '../../firebaseConfig';
   const DetailChip = ({ icon, label, value }) => (
     <View style={styles.detailChip}>
       <View style={styles.detailIconContainer}>
-        <Ionicons name={icon} size={20} color="#34D399" />
+        <Ionicons name={icon} size={20} color="#95ba72" />
       </View>
       <View>
         <Text style={styles.detailLabel}>{label}</Text>
@@ -259,7 +259,7 @@ import { db, storage } from '../../firebaseConfig';
     },
     progressFill: {
       height: '100%',
-      backgroundColor: '#34D399',
+      backgroundColor: '#95ba72',
       borderRadius: 4,
     },
     carousel: {
@@ -279,7 +279,7 @@ import { db, storage } from '../../firebaseConfig';
     },
     price: {
       fontSize: 24,
-      color: '#34D399',
+      color: '#95ba72',
       fontWeight: 'bold',
       marginBottom: 16,
     },
@@ -370,7 +370,7 @@ import { db, storage } from '../../firebaseConfig';
       fontWeight: '600',
     },
     publishButton: {
-      backgroundColor: '#34D399',
+      backgroundColor: '#95ba72',
       padding: 16,
       borderRadius: 12,
       width: '48%',

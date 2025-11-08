@@ -44,14 +44,14 @@ const SelectCategoryScreen = () => {
 
   const renderCategoryItem = ({ item }) => {
     const isSelected = selectedCategory === item.id;
-    const itemColor = isSelected ? '#34D399' : '#000';
+    const itemColor = isSelected ? '#95ba72' : '#000';
 
     return (
       <TouchableOpacity
         style={[
           styles.categoryChip,
           {
-            borderColor: isSelected ? '#34D399' : '#E0E0E0',
+            borderColor: isSelected ? '#95ba72' : '#E0E0E0',
             backgroundColor: isSelected ? '#E0F2F1' : 'white',
             borderWidth: isSelected ? 2 : 1.5,
           }
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   categoryChipSelected: {
     backgroundColor: '#E0F2F1',
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     borderWidth: 2,
   },
   categoryText: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   nextButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

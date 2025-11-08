@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
   Modal,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  StyleSheet,
-  SafeAreaView,
   Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons, Feather, FontAwesome5 } from '@expo/vector-icons';
 import RangeSlider from 'react-native-range-slider';
 
 const categories = [
@@ -102,7 +102,7 @@ const FilterModal = ({ isVisible, onClose, onApplyFilters }) => {
                   <FontAwesome5 
                     name={category.icon} 
                     size={16} 
-                    color={selectedCategories.includes(category.id) ? '#34D399' : '#6B7280'} 
+                    color={selectedCategories.includes(category.id) ? '#95ba72' : '#6B7280'} 
                     style={styles.categoryIcon} 
                   />
                   <Text 
@@ -130,9 +130,9 @@ const FilterModal = ({ isVisible, onClose, onApplyFilters }) => {
                 rangeEnabled={true}
                 onValueChanged={(low, high) => handlePriceChange(low, high)}
                 style={styles.slider}
-                selectionColor="#34D399"
+                selectionColor="#95ba72"
                 blankColor="#E5E7EB"
-                thumbBorderColor="#34D399"
+                thumbBorderColor="#95ba72"
                 thumbColor="#FFFFFF"
               />
               <View style={styles.priceRangeLabels}>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   resetText: {
-    color: '#34D399',
+    color: '#95ba72',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   categoryChipSelected: {
     backgroundColor: '#E0F2F1',
-    borderColor: '#34D399',
+    borderColor: '#95ba72',
     borderWidth: 1,
   },
   categoryIcon: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   applyButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

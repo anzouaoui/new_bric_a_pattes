@@ -165,7 +165,7 @@ export default function MyOrdersScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 2,
     width: '100%',
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
   },
   ordersList: {
     padding: 16,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   browseButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#95ba72',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

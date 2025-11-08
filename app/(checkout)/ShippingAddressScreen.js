@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   checked: {
-    backgroundColor: '#34D399',
-    borderColor: '#34D399',
+    backgroundColor: '#95ba72',
+    borderColor: '#95ba72',
   },
   checkboxLabel: {
     color: '#4B5563',
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   primaryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#95ba72',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   deliveryMethodTextActive: {
-    color: '#34D399',
+    color: '#95ba72',
     fontWeight: '600',
   },
 });
@@ -480,7 +480,7 @@ export default function ShippingAddressScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#34D399" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -531,7 +531,7 @@ export default function ShippingAddressScreen() {
               <Ionicons 
                 name="home-outline" 
                 size={20} 
-                color={deliveryMethod === 'domicile' ? '#34D399' : '#6B7280'} 
+                color={deliveryMethod === 'domicile' ? '#95ba72' : '#6B7280'} 
               />
               <Text 
                 style={[
@@ -553,7 +553,7 @@ export default function ShippingAddressScreen() {
               <Ionicons 
                 name="storefront-outline" 
                 size={20} 
-                color={deliveryMethod === 'pickup' ? '#34D399' : '#6B7280'} 
+                color={deliveryMethod === 'pickup' ? '#95ba72' : '#6B7280'} 
               />
               <Text 
                 style={[
@@ -634,7 +634,7 @@ export default function ShippingAddressScreen() {
             </>
           ) : (
             <View style={styles.pickupInfo}>
-              <Ionicons name="storefront" size={48} color="#34D399" style={styles.pickupIcon} />
+              <Ionicons name="storefront" size={48} color="#95ba72" style={styles.pickupIcon} />
               <Text style={styles.pickupTitle}>Retrait en magasin</Text>
               <Text style={styles.pickupAddress}>
                 123 Rue du Commerce{'\n'}75000 Paris, France

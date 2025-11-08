@@ -18,8 +18,8 @@ import { auth, db } from '../../firebaseConfig';
 const statusConfig = {
   paid_pending_shipment: { text: 'À expédier', color: '#F59E0B', bgColor: '#FEF3C7' },
   shipped: { text: 'Expédié', color: '#3B82F6', bgColor: '#DBEAFE' },
-  delivered: { text: 'Livré', color: '#10B981', bgColor: '#D1FAE5' },
-  completed: { text: 'Terminé', color: '#10B981', bgColor: '#D1FAE5' },
+  delivered: { text: 'Livré', color: '#95ba72', bgColor: '#D1FAE5' },
+  completed: { text: 'Terminé', color: '#95ba72', bgColor: '#D1FAE5' },
   disputed: { text: 'Litige', color: '#EF4444', bgColor: '#FEE2E2' },
 };
 
@@ -175,7 +175,7 @@ const MySales = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#95ba72" />
       </View>
     );
   }
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   selectedTabText: {
-    color: '#10B981',
+    color: '#95ba72',
     fontWeight: '600',
   },
   listContent: {
